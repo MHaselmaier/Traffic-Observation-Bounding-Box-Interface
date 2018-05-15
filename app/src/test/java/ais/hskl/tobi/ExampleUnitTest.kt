@@ -1,4 +1,4 @@
-package ais.hs_kl.tobi
+package ais.hskl.tobi
 
 import org.junit.Test
 
