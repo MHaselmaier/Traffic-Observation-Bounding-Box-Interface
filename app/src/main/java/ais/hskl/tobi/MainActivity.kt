@@ -38,9 +38,9 @@ class MainActivity : AppCompatActivity() {
 
         initializeCamera()
 
-        //System.loadLibrary("tensorflow_inference")
+        System.loadLibrary("tensorflow_inference")
 
-        //initializeTensorFlow()
+        initializeTensorFlow()
     }
 
     override fun onResume() {
@@ -56,7 +56,9 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
+        //If requestCode equals PERMISSION_ACCESS_CAMERA, our permission request has been accepted
         when(requestCode){
+
             PERMISSION_ACCESS_CAMERA -> {
 
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
@@ -76,16 +78,13 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-        // Add other 'when' lines to check for other
-        // permissions this app might request.
-            else -> {
-                // Ignore all other requests.
-            }
+            else -> {}
 
         }
 
     }
 
+    //Callback method to be invoked after calling the takePicture method
     var pictureCallback: Camera.PictureCallback = Camera.PictureCallback { byteData, cameraObject ->
         findViewById<TextView>(R.id.testText).text = byteData?.size.toString()
 
@@ -100,14 +99,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeCamera(){
+
+        //Check if device even has a camera.
         if(!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)){
 
             Toast.makeText(this, "Could not find any camera device", Toast.LENGTH_LONG).show()
 
         }else{
 
+            //Check if application has the permission to use the camera
             if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
 
+                //Request permission
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), PERMISSION_ACCESS_CAMERA)
 
             }else{
@@ -142,7 +145,7 @@ class MainActivity : AppCompatActivity() {
 
             this.camera?.startPreview()
 
-            // camera.parameters
+            // Intended for later use: camera.parameters
 
             this.camera?.takePicture(null, null, pictureCallback)
         }
@@ -155,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun safeCameraOpen(id: Int): Boolean{
 
-        var isOpen: Boolean = false
+        var isOpen = false
 
         try{
             releaseCamera()
