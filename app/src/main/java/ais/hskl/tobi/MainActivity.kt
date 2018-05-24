@@ -1,5 +1,8 @@
+@file:Suppress("DEPRECATION")
+
 package ais.hskl.tobi
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -7,6 +10,8 @@ import android.hardware.Camera
 import android.hardware.Camera.CameraInfo
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.SurfaceView
 import android.widget.TextView
@@ -16,12 +21,14 @@ import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
+@SuppressWarnings("deprecation")
 class MainActivity : AppCompatActivity() {
 
     private var MODEL_FILE = "file:///android_asset/tobi.pb"
     private var INPUT_NODE = "image_tensor"
     private var OUTPUT_NODES = arrayOf("num_detections", "detection_boxes", "detection_scores", "detection_classes")
 
+    private var PERMISSION_ACCESS_CAMERA = 42
     private var camera: Camera? = null
     private var cameraId = 0
 
@@ -29,46 +36,95 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if(!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-
-            Toast.makeText(this, "Could not find any camera device", Toast.LENGTH_LONG).show()
-
-        }else{
-
-            this.cameraId = findPrimaryCamera()
-
-            if(this.cameraId < 0){
-
-                Toast.makeText(this, "Could not find any primary camera", Toast.LENGTH_LONG).show()
-
-            }
-        }
+        initializeCamera()
 
         //System.loadLibrary("tensorflow_inference")
 
         //initializeTensorFlow()
     }
 
-    var pictureCallback: Camera.PictureCallback = object: Camera.PictureCallback{
-        override fun onPictureTaken(byteData: ByteArray?, cameraObject: Camera?) {
+    override fun onResume() {
+        super.onResume()
 
-            findViewById<TextView>(R.id.testText).text = byteData?.size.toString()
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
 
-            if(byteData != null){
+            startupCameraPreview()
 
-                var bitmap = BitmapFactory.decodeByteArray(byteData, 0, byteData.size)
+        }
+    }
 
-                    var data:IntArray = IntArray(bitmap.width * bitmap.height)
-                    bitmap.getPixels(data,0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-                    Log.i("MainActivity", "Data: " + data[10])
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when(requestCode){
+            PERMISSION_ACCESS_CAMERA -> {
+
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                } else {
+                    this.cameraId = findPrimaryCamera()
+
+                    if(this.cameraId < 0){
+
+                        Toast.makeText(this, "Could not find any primary camera", Toast.LENGTH_LONG).show()
+
+                    }else{
+
+                        startupCameraPreview()
+
+                    }
+                }
+                return
             }
+
+        // Add other 'when' lines to check for other
+        // permissions this app might request.
+            else -> {
+                // Ignore all other requests.
+            }
+
         }
 
     }
 
-    override fun onResume() {
-        super.onResume()
+    var pictureCallback: Camera.PictureCallback = Camera.PictureCallback { byteData, cameraObject ->
+        findViewById<TextView>(R.id.testText).text = byteData?.size.toString()
 
+        if(byteData != null){
+
+            var bitmap = BitmapFactory.decodeByteArray(byteData, 0, byteData.size)
+
+            var data = IntArray(bitmap.width * bitmap.height)
+            bitmap.getPixels(data,0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+            Log.i("MainActivity", "Data: " + data[10])
+        }
+    }
+
+    private fun initializeCamera(){
+        if(!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+
+            Toast.makeText(this, "Could not find any camera device", Toast.LENGTH_LONG).show()
+
+        }else{
+
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), PERMISSION_ACCESS_CAMERA)
+
+            }else{
+
+                this.cameraId = findPrimaryCamera()
+
+                if(this.cameraId < 0){
+
+                    Toast.makeText(this, "Could not find any primary camera", Toast.LENGTH_LONG).show()
+
+                }
+
+            }
+        }
+    }
+
+    private fun startupCameraPreview(){
         if(safeCameraOpen(this.cameraId)) {
 
             //Initialize fake SurfaceView
