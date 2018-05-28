@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
+
+@SuppressWarnings("deprecation")
 public class BoundingBoxView implements TextureView.SurfaceTextureListener
 {
     private Activity activity;
