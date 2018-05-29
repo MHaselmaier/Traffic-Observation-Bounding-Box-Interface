@@ -134,13 +134,16 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         paint.setStrokeWidth(5);
 
         Canvas canvas = this.boundingBox.lockCanvas();
-        canvas.drawBitmap(bitmap, 0, 0, null);
-        for (TobiNetwork.DetectedObject object: objects)
+        if (null != canvas)
         {
-            float[] rect = object.getBox();
-            canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), paint);
+            canvas.drawBitmap(bitmap, 0, 0, null);
+            for (TobiNetwork.DetectedObject object : objects) {
+                float[] rect = object.getBox();
+                canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), paint);
+            }
         }
         this.boundingBox.unlockCanvasAndPost(canvas);
+
     }
 
     private void setupCameraInstance()
