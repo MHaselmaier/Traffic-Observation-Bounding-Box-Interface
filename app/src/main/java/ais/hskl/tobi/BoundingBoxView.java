@@ -47,25 +47,17 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         this.boundingBox = boundingBox;
         this.boundingBox.setOpaque(true);
         this.tobi = tobi;
+
+        if (this.preview.isAvailable())
+        {
+            setupPreview(this.preview.getSurfaceTexture());
+        }
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        setupCameraInstance();
-        if (null != this.camera)
-        {
-            try
-            {
-                this.camera.setPreviewTexture(surface);
-                this.camera.startPreview();
-            }
-            catch (IOException ioe)
-            {
-                Toast.makeText(this.activity, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
-                Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
-            }
-        }
+        setupPreview(surface);
     }
 
     @Override
@@ -98,6 +90,24 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         Log.d("ok", "DetectedObjects: " + objects.length);
 
         drawBitmapWithBoundingBoxes(bitmap, objects);
+    }
+
+    private void setupPreview(SurfaceTexture surface)
+    {
+        setupCameraInstance();
+        if (null != this.camera)
+        {
+            try
+            {
+                this.camera.setPreviewTexture(surface);
+                this.camera.startPreview();
+            }
+            catch (IOException ioe)
+            {
+                Toast.makeText(this.activity, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+                Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
+            }
+        }
     }
 
     private byte[] getImageData(Bitmap bitmap)

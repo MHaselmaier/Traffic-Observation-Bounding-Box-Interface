@@ -1,8 +1,10 @@
 package ais.hskl.tobi;
 
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.TextureView;
 import android.widget.Toast;
@@ -11,24 +13,24 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 42;
 
+    private BoundingBoxView boundingBoxView;
+
     @Override
      protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        TobiNetwork tobi = new TobiNetwork(this);
-        new BoundingBoxView(this, (TextureView) findViewById(R.id.textureBackground), (TextureView) findViewById(R.id.textureForeground), tobi);
     }
 
     @Override
     protected void onResume(){
         super.onResume();
 
-        /*
          if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
-              //If permissions has been revoked -> Close application
+              setupBoundingBoxView();
          }
-         */
+         else {
+             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+         }
     }
 
     @Override
@@ -45,8 +47,10 @@ public class MainActivity extends AppCompatActivity {
             case CAMERA_PERMISSION_CODE:
                 if(grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     //Start using the camera. All needed permissions are granted
+                    setupBoundingBoxView();
                 }else{
                     Toast.makeText(this, "Die App benötigt die Berechtigung auf Ihre Kamera zuzugreifen!", Toast.LENGTH_LONG).show();
+                    finish();
                 }
                 break;
 
@@ -55,5 +59,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+    }
+
+    private void setupBoundingBoxView()
+    {
+        if (null == this.boundingBoxView)
+        {
+            TobiNetwork tobi = new TobiNetwork(this);
+            this.boundingBoxView = new BoundingBoxView(this, (TextureView) findViewById(R.id.textureBackground), (TextureView) findViewById(R.id.textureForeground), tobi);
+        }
     }
 }
