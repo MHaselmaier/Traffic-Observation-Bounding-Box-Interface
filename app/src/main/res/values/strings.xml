@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Tobi</string>
+    <string name="toast_msg_require_camera_permission">The application requires the permission to access your camera to run!</string>
+    <string name="toast_msg_error_preview">An error occured trying to open the camera preview</string>
+    <string name="toast_msg_error_camera_access">Error trying to access your camera</string>
 </resources>

@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                     //Start using the camera. All needed permissions are granted
                     setupBoundingBoxView();
                 }else{
-                    Toast.makeText(this, "Die App benötigt die Berechtigung auf Ihre Kamera zuzugreifen!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.toast_msg_require_camera_permission, Toast.LENGTH_LONG).show();
                     finish();
                 }
                 break;
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         if (null == this.boundingBoxView)
         {
             TobiNetwork tobi = new TobiNetwork(this);
-            this.boundingBoxView = new BoundingBoxView(this, (TextureView) findViewById(R.id.textureBackground), (TextureView) findViewById(R.id.textureForeground), tobi);
+            this.boundingBoxView = new BoundingBoxView(this, findViewById(R.id.textureBackground), findViewById(R.id.textureForeground), tobi);
         }
     }
 }

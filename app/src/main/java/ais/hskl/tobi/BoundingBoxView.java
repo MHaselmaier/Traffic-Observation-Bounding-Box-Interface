@@ -104,7 +104,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
             }
             catch (IOException ioe)
             {
-                Toast.makeText(this.activity, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.activity, R.string.toast_msg_error_preview, Toast.LENGTH_LONG).show();
                 Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
             }
         }
@@ -157,7 +157,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         }
         catch(Exception e)
         {
-            Toast.makeText(this.activity, "Es konnte nicht auf die Kamera zugegriffen werden!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this.activity, R.string.toast_msg_error_camera_access, Toast.LENGTH_LONG).show();
             Log.e(BoundingBoxView.class.getSimpleName(), e.toString());
         }
     }

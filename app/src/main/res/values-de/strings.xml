@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tobi</string>
+    <string name="toast_msg_require_camera_permission">Die App benötigt die Berechtigung auf Ihre Kamera zuzugreifen!</string>
+    <string name="toast_msg_error_preview">Ein Fehler trat beim Öffnen der Kameravorschau auf</string>
+    <string name="toast_msg_error_camera_access">Es trat ein Fehler beim Versuch auf die Kamera zuzugreifen auf</string>
+</resources>
