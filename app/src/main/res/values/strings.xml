@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Tobi</string>
 
+    <string name="about">Das \"Traffic Observation Bounding-(B)ox Interface\" (Tobi) ist eine im Rahmen der Veranstalltung Advanced Interactive Systems entstandene Anwendung, welche den Fahrer beim Erkennen von Straßendschildern unterstützt.</string>
+    <string name="debug">Debug-Informationen anzeigen</string>
+    <string name="min_detection_score_title">Wählen Sie die Genauigkeit:</string>
+    <string name="min_detection_score">Genauigkeit: %1$d%%</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="accept">Annehmen</string>
+
     <string-array name="detection_classes">
         <item>30 km/h</item>
         <item>50 km/h</item>
