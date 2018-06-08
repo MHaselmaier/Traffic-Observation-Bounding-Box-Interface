@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Button;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -32,6 +33,11 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked());
             }
         });
+
+        Button minDetectionScore = findViewById(R.id.min_detection_score);
+        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
+        minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
     }
 
     @Override
