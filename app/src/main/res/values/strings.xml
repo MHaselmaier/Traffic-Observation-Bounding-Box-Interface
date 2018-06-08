@@ -1,3 +1,48 @@
 <resources>
     <string name="app_name">Tobi</string>
+
+    <string-array name="detection_classes">
+        <item>30 km/h</item>
+        <item>50 km/h</item>
+        <item>60 km/h</item>
+        <item>70 km/h</item>
+        <item>80 km/h</item>
+        <item>Ende 80 km/h</item>
+        <item>100 km/h</item>
+        <item>120 km/h</item>
+        <item>Überholverbot</item>
+        <item>Überholverbot (LKW)</item>
+        <item>Vorfahrt</item>
+        <item>Vorfahrtsstraße</item>
+        <item>Vorfahrt gewähren</item>
+        <item>Stop</item>
+        <item>Verbot (Alle)</item>
+        <item>Verbot (LKW)</item>
+        <item>Verbot (Einfahrt)</item>
+        <item>Gefahr</item>
+        <item>Kurve (Links)</item>
+        <item>Kurve (Rechts)</item>
+        <item>Doppelkurve</item>
+        <item>Unebene Fahrbahn</item>
+        <item>Schleudergefahr</item>
+        <item>Verengte Fahrbahn</item>
+        <item>Baustelle</item>
+        <item>Ampel</item>
+        <item>Fussgänger</item>
+        <item>Kinder</item>
+        <item>Fahrrad</item>
+        <item>Schnee-/Eisglätte</item>
+        <item>Tiere</item>
+        <item>Ende Verbote</item>
+        <item>Rechts</item>
+        <item>Links</item>
+        <item>Gerade aus</item>
+        <item>Rechts / Gerade aus</item>
+        <item>Links / Gerade aus</item>
+        <item>Rechts vorbei</item>
+        <item>Links vorbei</item>
+        <item>Kreisel</item>
+        <item>Ende Überholverbot</item>
+        <item>Ende Überholverbot (LKW)</item>
+    </string-array>
 </resources>

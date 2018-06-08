@@ -18,11 +18,13 @@ public class TobiNetwork
     private static final float MIN_SCORE = 0.0f;
 
     private TensorFlowInferenceInterface inferenceInterface;
+    private String[] detectedClassStrings;
 
     public TobiNetwork(Context context)
     {
         System.loadLibrary("tensorflow_inference");
         this.inferenceInterface = new TensorFlowInferenceInterface(context.getAssets(), MODEL_FILE);
+        this.detectedClassStrings = context.getResources().getStringArray(R.array.detection_classes);
     }
 
     public DetectedObject[] predict(byte[] image, long... dimensions)
@@ -50,7 +52,7 @@ public class TobiNetwork
         return new DetectedObject[0];
     }
 
-    private static DetectedObject[] generateDetectedObjects(float[] detection_boxes, float[] detection_scores, float[] detection_classes)
+    private DetectedObject[] generateDetectedObjects(float[] detection_boxes, float[] detection_scores, float[] detection_classes)
     {
         List<DetectedObject> detectedObjects = new ArrayList<>();
         for (int i = 0; detection_scores.length > i; ++i)
@@ -58,7 +60,7 @@ public class TobiNetwork
             if (MIN_SCORE <= detection_scores[i])
             {
                 float[] box = Arrays.copyOfRange(detection_boxes, i * 4, i * 4 + 4);
-                detectedObjects.add(new DetectedObject(box, detection_scores[i], detection_classes[i]));
+                detectedObjects.add(new DetectedObject(box, detection_scores[i], this.detectedClassStrings[(int)detection_classes[i]]));
             }
         }
         return detectedObjects.toArray(new DetectedObject[0]);
@@ -68,9 +70,9 @@ public class TobiNetwork
     {
         private float[] box;
         private float score;
-        private float detectedClass;
+        private String detectedClass;
 
-        private DetectedObject(float[] box, float score, float detectedClass)
+        private DetectedObject(float[] box, float score, String detectedClass)
         {
             this.box = box;
             this.score = score;
@@ -87,7 +89,7 @@ public class TobiNetwork
             return this.score;
         }
 
-        public float getDetectedClass()
+        public String getDetectedClass()
         {
             return this.detectedClass;
         }
