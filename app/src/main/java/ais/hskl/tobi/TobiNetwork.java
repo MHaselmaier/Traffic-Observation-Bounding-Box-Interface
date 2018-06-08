@@ -15,7 +15,7 @@ public class TobiNetwork
     private static final String INPUT_NODE = "image_tensor";
     private static final String[] OUTPUT_NODES = {"num_detections", "detection_boxes", "detection_scores", "detection_classes"};
 
-    private static final float MIN_SCORE = 0.0f;
+    private static final float MIN_SCORE = 0.7f;
 
     private TensorFlowInferenceInterface inferenceInterface;
     private String[] detectedClassStrings;
