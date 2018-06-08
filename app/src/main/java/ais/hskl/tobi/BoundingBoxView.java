@@ -25,6 +25,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     private TextureView boundingBox;
 
     private TobiNetwork tobi;
+    private boolean showDebugInfo;
 
     private static final int BATCH_SIZE = 1;
     private static final int COLOR_CHANNELS = 3;
@@ -52,6 +53,11 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         {
             setupPreview(this.preview.getSurfaceTexture());
         }
+    }
+
+    public void showDebugInfo(boolean showDebugInfo)
+    {
+        this.showDebugInfo = showDebugInfo;
     }
 
     @Override
@@ -128,10 +134,16 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
 
     private void drawBitmapWithBoundingBoxes(Bitmap bitmap, TobiNetwork.DetectedObject[] objects)
     {
-        Paint paint = new Paint();
-        paint.setColor(Color.RED);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(5);
+        Paint boxPaint = new Paint();
+        boxPaint.setColor(Color.RED);
+        boxPaint.setStyle(Paint.Style.STROKE);
+        boxPaint.setStrokeWidth(5);
+
+        Paint fontPaint = new Paint();
+        fontPaint.setColor(Color.RED);
+        fontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        fontPaint.setStrokeWidth(1);
+        fontPaint.setTextSize(30);
 
         Canvas canvas = this.boundingBox.lockCanvas();
         if (null != canvas)
@@ -139,7 +151,11 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
             canvas.drawBitmap(bitmap, 0, 0, null);
             for (TobiNetwork.DetectedObject object : objects) {
                 float[] rect = object.getBox();
-                canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), paint);
+                canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), boxPaint);
+                if (this.showDebugInfo)
+                {
+                    canvas.drawText((int)(object.getScore() * 100) + "% " + object.getDetectedClass(), rect[LEFT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight() + 30, fontPaint);
+                }
             }
         }
         this.boundingBox.unlockCanvasAndPost(canvas);
