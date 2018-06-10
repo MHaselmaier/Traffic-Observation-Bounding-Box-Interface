@@ -13,10 +13,15 @@ import android.view.TextureView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Stack;
 
 
 @SuppressWarnings("deprecation")
-public class BoundingBoxView implements TextureView.SurfaceTextureListener
+public class BoundingBoxView implements TextureView.SurfaceTextureListener, TobiNetwork.DetectedObjectHandler
 {
     private Activity activity;
     private int cameraID;
@@ -83,19 +88,25 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     {
     }
 
+    Bitmap bitmap;
+
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        Bitmap bitmap = this.preview.getBitmap();
+        bitmap = this.preview.getBitmap();
         byte[] image = getImageData(bitmap);
 
-        long start = System.nanoTime();
-        TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, 1, bitmap.getHeight(), bitmap.getWidth(), 3);
-        long end = System.nanoTime();
-        Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
-        Log.d("ok", "DetectedObjects: " + objects.length);
+        this.tobi.predict(this, this.preview.getBitmap(), 1, bitmap.getHeight(), bitmap.getWidth(), 3);
+    }
 
-        drawBitmapWithBoundingBoxes(bitmap, objects);
+    long start;
+    @Override
+    public void handleDetectedObjects(Bitmap bitmap, TobiNetwork.DetectedObject[] detectedObjects)
+    {
+        long end = System.nanoTime();
+        Log.d("ok", ((end - start) / 1_000_000_000f) + "s");
+        start = end;
+        drawBitmapWithBoundingBoxes(bitmap, detectedObjects);
     }
 
     private void setupPreview(SurfaceTexture surface)
