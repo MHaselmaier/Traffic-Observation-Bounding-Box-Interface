@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_CODE = 42;
 
     private BoundingBoxView boundingBoxView;
+    private GpsHandler gpsHandler;
     private TobiNetwork tobi;
 
     private Switch showDebugInfo;
@@ -25,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.tobi = new TobiNetwork(this);
+        this.gpsHandler = new GpsHandler(this, (speed) -> {
+            Toast.makeText(this, "Current speed: " + speed, Toast.LENGTH_SHORT).show();
+        });
 
         this.showDebugInfo = findViewById(R.id.debug);
         this.showDebugInfo.setOnClickListener((v) -> {
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked());
             }
         });
+
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
