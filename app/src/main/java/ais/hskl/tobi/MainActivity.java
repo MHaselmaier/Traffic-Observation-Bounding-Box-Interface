@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -25,13 +26,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.tobi = new TobiNetwork(this);
+       // this.tobi = new TobiNetwork(this);
         this.gpsHandler = new GpsHandler(this, (speed) -> {
-            Toast.makeText(this, "Current speed: " + speed, Toast.LENGTH_SHORT).show();
+            //Log.i("GPS SPEED", "" + speed);
+            Toast.makeText(this, "Speed: " + speed, Toast.LENGTH_LONG).show();
         });
 
-        this.showDebugInfo = findViewById(R.id.debug);
-        this.showDebugInfo.setOnClickListener((v) -> {
+        //this.showDebugInfo = findViewById(R.id.debug);
+        /*this.showDebugInfo.setOnClickListener((v) -> {
             if (null != MainActivity.this.boundingBoxView)
             {
                 MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked());
@@ -43,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
         MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
+
+        */
     }
 
     @Override
@@ -50,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
          if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
-              setupBoundingBoxView();
+             // setupBoundingBoxView();
          }
          else {
              ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
