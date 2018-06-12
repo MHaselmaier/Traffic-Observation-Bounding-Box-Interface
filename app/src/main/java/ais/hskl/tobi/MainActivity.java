@@ -27,9 +27,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
        // this.tobi = new TobiNetwork(this);
-        this.gpsHandler = new GpsHandler(this, (speed) -> {
+        this.gpsHandler = new GpsHandler(this, (speed, lng, lat) -> {
             //Log.i("GPS SPEED", "" + speed);
-            Toast.makeText(this, "Speed: " + speed, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, String.format("Sp:%f,Lng:%f,Lat:%f", speed, lng, lat), Toast.LENGTH_LONG).show();
+
+
         });
 
         //this.showDebugInfo = findViewById(R.id.debug);
