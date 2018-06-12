@@ -25,15 +25,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
      protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        setContentView(R.layout.activity_main);
        // this.tobi = new TobiNetwork(this);
+
         this.gpsHandler = new GpsHandler(this, (speed, lng, lat) -> {
-            //Log.i("GPS SPEED", "" + speed);
             Toast.makeText(this, String.format("Sp:%f,Lng:%f,Lat:%f", speed, lng, lat), Toast.LENGTH_LONG).show();
-
-
         });
 
         //this.showDebugInfo = findViewById(R.id.debug);
