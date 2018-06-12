@@ -1,10 +1,20 @@
-*
+#Ignored files
 app/.classpath
 app/.project
-.settings/*
-!/app/*
+app/build/
+app/app.iml
+.settings/
+local.properties
+.idea/
+.gradle/
+
+#Tracked files
 !build.gradle
-!gradle/*
+!app/libs/
+!app/src/
+!app/proguard-rules.pro
+!build.gradle
+!gradle/
 !gradle.properties
 !gradlew
 !gradlew.bat
