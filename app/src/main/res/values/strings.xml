@@ -22,7 +22,7 @@
         <item>Vorfahrt</item>
         <item>Vorfahrtsstraße</item>
         <item>Vorfahrt gewähren</item>
-        <item>Stop</item>
+        <item>Stopp</item>
         <item>Verbot (Alle)</item>
         <item>Verbot (LKW)</item>
         <item>Verbot (Einfahrt)</item>
@@ -48,7 +48,7 @@
         <item>Links / Gerade aus</item>
         <item>Rechts vorbei</item>
         <item>Links vorbei</item>
-        <item>Kreisel</item>
+        <item>Kreisverkehr</item>
         <item>Ende Überholverbot</item>
         <item>Ende Überholverbot (LKW)</item>
     </string-array>
