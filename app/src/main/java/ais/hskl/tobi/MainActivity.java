@@ -90,7 +90,9 @@ public class MainActivity extends AppCompatActivity {
     {
         if (null == this.boundingBoxView)
         {
-            this.boundingBoxView = new BoundingBoxView(this, findViewById(R.id.textureBackground), findViewById(R.id.textureForeground), this.tobi);
+            this.boundingBoxView = new BoundingBoxView(this, findViewById(R.id.textureBackground),
+                                                        findViewById(R.id.textureForeground),
+                                                        findViewById(R.id.signs), this.tobi);
             this.boundingBoxView.showDebugInfo(this.showDebugInfo.isChecked());
         }
     }
