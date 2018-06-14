@@ -1,33 +1,31 @@
 package ais.hskl.tobi;
 
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.support.constraint.ConstraintLayout;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
-import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.view.WindowManager;
 import android.widget.Toast;
-
-import com.google.android.flexbox.FlexboxLayout;
 
 import java.io.IOException;
 
-
 @SuppressWarnings("deprecation")
-public class BoundingBoxView implements TextureView.SurfaceTextureListener
+public class BoundingBoxView extends ConstraintLayout implements TextureView.SurfaceTextureListener
 {
-    private Activity activity;
+    private Context context;
     private int cameraID;
     private Camera camera;
     private TextureView preview;
     private TextureView boundingBox;
-    private FlexboxLayout signs;
+    private SignsView signs;
 
     private TobiNetwork tobi;
     private boolean showDebugInfo;
@@ -47,22 +45,33 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     private static final int BOTTOM = 2;
     private static final int RIGHT = 3;
 
-    public BoundingBoxView(Activity activity, TextureView preview, TextureView boundingBox, FlexboxLayout signs, TobiNetwork tobi)
+    public BoundingBoxView(Context context, AttributeSet attrs)
     {
-        this.activity = activity;
-        this.preview = preview;
-        this.preview.setSurfaceTextureListener(this);
-        this.boundingBox = boundingBox;
-        this.boundingBox.setOpaque(true);
-        this.signs = signs;
-        this.tobi = tobi;
+        super(context, attrs);
+        this.context = context;
+    }
 
-        this.detectedClasses = activity.getResources().getStringArray(R.array.detection_classes);
+    @Override
+    public void onLayout(boolean changed, int left, int top, int right, int bottom)
+    {
+        super.onLayout(changed, left, top, right, bottom);
+
+        this.detectedClasses = this.context.getResources().getStringArray(R.array.detection_classes);
+
+        this.preview = findViewById(R.id.textureBackground);
+        this.preview.setSurfaceTextureListener(this);
+        this.boundingBox = findViewById(R.id.textureForeground);
+        this.signs = findViewById(R.id.signs);
 
         if (this.preview.isAvailable())
         {
-            setupPreview(this.preview.getSurfaceTexture());
+            setupPreview();
         }
+    }
+
+    public void setTobiNetwork(TobiNetwork tobi)
+    {
+        this.tobi = tobi;
     }
 
     public void showDebugInfo(boolean showDebugInfo)
@@ -73,7 +82,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        setupPreview(surface);
+        setupPreview();
     }
 
     @Override
@@ -106,22 +115,22 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         Log.d("ok", "DetectedObjects: " + objects.length);
 
         drawBitmapWithBoundingBoxes(bitmap, objects);
-        addDetectedSignsToView(objects);
+        this.signs.updateSigns(objects);
     }
 
-    private void setupPreview(SurfaceTexture surface)
+    public void setupPreview()
     {
         setupCameraInstance();
         if (null != this.camera)
         {
             try
             {
-                this.camera.setPreviewTexture(surface);
+                this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
                 this.camera.startPreview();
             }
             catch (IOException ioe)
             {
-                Toast.makeText(this.activity, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
                 Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
             }
         }
@@ -173,113 +182,6 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         this.boundingBox.unlockCanvasAndPost(canvas);
     }
 
-    private void addDetectedSignsToView(TobiNetwork.DetectedObject[] detectedObjects)
-    {
-        for (TobiNetwork.DetectedObject detectedObject: detectedObjects)
-        {
-            ImageView sign = new ImageView(this.activity);
-            sign.setImageResource(mapDetectedClassToImageResource(detectedObject.getDetectedClass()));
-
-            int size = this.activity.getResources().getDimensionPixelSize(R.dimen.sign_size);
-            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(size, size);
-            sign.setLayoutParams(layoutParams);
-
-            this.signs.addView(sign);
-        }
-    }
-
-    private int mapDetectedClassToImageResource(Constants.SIGNS detectedClass)
-    {
-        switch (detectedClass)
-        {
-        case SPEED_LIMIT_30:
-            //return R.drawable.SPEED_LIMIT_30;
-        case SPEED_LIMIT_50:
-            //return R.drawable.SPEED_LIMIT_50;
-        case SPEED_LIMIT_60:
-            return R.drawable.speed_limit_60;
-        case SPEED_LIMIT_70:
-            //return R.drawable.SPEED_LIMIT_70;
-        case SPEED_LIMIT_80:
-            //return R.drawable.SPEED_LIMIT_80;
-        case END_SPEED_LIMIT_80:
-            //return R.drawable.END_SPEED_LIMIT_80;
-        case SPEED_LIMIT_100:
-            //return R.drawable.SPEED_LIMIT_100;
-        case SPEED_LIMIT_120:
-            //return R.drawable.SPEED_LIMIT_120;
-        case NO_OVERTAKING:
-            return R.drawable.no_overtaking;
-        case NO_OVERTAKING_TRUCK:
-            return R.drawable.no_overtaking_truck;
-        case RIGHT_OF_WAY:
-            return R.drawable.right_of_way;
-        case MAJOR_ROAD:
-            return R.drawable.major_road;
-        case GIVE_WAY:
-            return R.drawable.give_way;
-        case STOP:
-            return R.drawable.stop;
-        case RESTRICTION_ALL:
-            return R.drawable.restriction_all;
-        case RESTRICTION_TRUCK:
-            return R.drawable.restriction_truck;
-        case RESTRICTION_ENTRY:
-            return R.drawable.restriction_entry;
-        case DANGER:
-            return R.drawable.danger;
-        case CURVE_LEFT:
-            return R.drawable.curve_left;
-        case CURVE_RIGHT:
-            return R.drawable.curve_right;
-        case DOUBLE_CURVE:
-            return R.drawable.double_curve;
-        case UNEVEN_ROAD:
-            return R.drawable.uneven_road;
-        case SLIPPERY_ROAD:
-            return R.drawable.slippery_road;
-        case NARROW_ROAD:
-            return R.drawable.narrow_road;
-        case CONSTRUCTION:
-            return R.drawable.construction;
-        case TRAFFIC_LIGHT:
-            return R.drawable.traffic_light;
-        case PEDESTRIAN:
-            return R.drawable.pedestrian;
-        case CHILDREN:
-            return R.drawable.children;
-        case BIKE:
-            return R.drawable.bike;
-        case SNOW_ICE:
-            return R.drawable.snow_ice;
-        case ANIMALS:
-            return R.drawable.animals;
-        case END_RESTRICTION_ALL:
-            return R.drawable.end_restriction_all;
-        case RIGHT:
-            return R.drawable.right;
-        case LEFT:
-            return R.drawable.left;
-        case STRAIGHT:
-            return R.drawable.straight;
-        case RIGHT_OR_STRAIGHT:
-            return R.drawable.right_or_straight;
-        case LEFT_OR_STRAIGHT:
-            return R.drawable.left_or_straight;
-        case PASS_RIGHT:
-            return R.drawable.pass_right;
-        case PASS_LEFT:
-            return R.drawable.pass_left;
-        case ROUND_ABOUT:
-            return R.drawable.round_about;
-        case END_NO_OVERTAKING:
-            return R.drawable.end_no_overtaking;
-        case END_NO_OVERTAKING_TRUCKS:
-            return R.drawable.end_no_overtaking_truck;
-        }
-        return -1;
-    }
-
     private void setupCameraInstance()
     {
         try
@@ -291,7 +193,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         }
         catch(Exception e)
         {
-            Toast.makeText(this.activity, "Es konnte nicht auf die Kamera zugegriffen werden!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this.context, "Es konnte nicht auf die Kamera zugegriffen werden!", Toast.LENGTH_LONG).show();
             Log.e(BoundingBoxView.class.getSimpleName(), e.toString());
         }
     }
@@ -313,7 +215,8 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
 
     private void setupCameraOrientation()
     {
-        int rotation = this.activity.getWindowManager().getDefaultDisplay().getRotation();
+        WindowManager windowManager = (WindowManager)this.context.getSystemService(Context.WINDOW_SERVICE);
+        int rotation = windowManager.getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation)
         {

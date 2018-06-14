@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.constraint.ConstraintLayout
+    <ais.hskl.tobi.BoundingBoxView
+        android:id="@+id/boundingBoxView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="ais.hskl.tobi.MainActivity">
@@ -30,14 +31,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.flexbox.FlexboxLayout
+        <ais.hskl.tobi.SignsView
             android:id="@+id/signs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:flexWrap="wrap"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-    </android.support.constraint.ConstraintLayout>
+    </ais.hskl.tobi.BoundingBoxView>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"
