@@ -1,8 +1,5 @@
 <resources>
     <string name="app_name">Tobi</string>
-    <string name="toast_msg_require_camera_permission">The application requires the permission to access your camera to run!</string>
-    <string name="toast_msg_error_preview">An error occured trying to open the camera preview</string>
-    <string name="toast_msg_error_camera_access">Error trying to access your camera</string>
 
     <string name="about">Das \"Traffic Observation Bounding-(B)ox Interface\" (Tobi) ist eine im Rahmen der Veranstalltung Advanced Interactive Systems entstandene Anwendung, welche den Fahrer beim Erkennen von Straßendschildern unterstützt.</string>
     <string name="debug">Debug-Informationen anzeigen</string>
@@ -25,7 +22,7 @@
         <item>Vorfahrt</item>
         <item>Vorfahrtsstraße</item>
         <item>Vorfahrt gewähren</item>
-        <item>Stop</item>
+        <item>Stopp</item>
         <item>Verbot (Alle)</item>
         <item>Verbot (LKW)</item>
         <item>Verbot (Einfahrt)</item>
@@ -51,7 +48,7 @@
         <item>Links / Gerade aus</item>
         <item>Rechts vorbei</item>
         <item>Links vorbei</item>
-        <item>Kreisel</item>
+        <item>Kreisverkehr</item>
         <item>Ende Überholverbot</item>
         <item>Ende Überholverbot (LKW)</item>
     </string-array>
