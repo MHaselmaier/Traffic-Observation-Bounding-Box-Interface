@@ -109,7 +109,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         byte[] image = getImageData(bitmap);
 
         long start = System.nanoTime();
-        TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, 1, bitmap.getHeight(), bitmap.getWidth(), 3);
+        TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getHeight(), bitmap.getWidth());
         long end = System.nanoTime();
         Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
         Log.d("ok", "DetectedObjects: " + objects.length);
