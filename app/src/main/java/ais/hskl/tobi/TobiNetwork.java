@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class TobiNetwork
+public class TobiNetwork implements Runnable
 {
     static
     {
@@ -25,13 +25,11 @@ public class TobiNetwork
 
     private TensorFlowInferenceInterface inferenceInterface;
     private float minDetectionScore = 0.7f;
-    private String[] detectedClassStrings;
 
     private BlockingQueue<PredictionInput> currentInput = new ArrayBlockingQueue<>(1);
 
     private Thread predictionThread = new Thread()
     {
-        private Handler handler = new Handler();
 
         @Override
         public void run()
@@ -87,7 +85,7 @@ public class TobiNetwork
     public TobiNetwork(Context context)
     {
         this.inferenceInterface = new TensorFlowInferenceInterface(context.getAssets(), MODEL_FILE);
-        this.detectedClassStrings = context.getResources().getStringArray(R.array.detection_classes);
+        //this.detectedClassStrings = context.getResources().getStringArray(R.array.detection_classes);
         this.predictionThread.setPriority(Thread.MAX_PRIORITY);
         this.predictionThread.start();
     }
@@ -115,23 +113,28 @@ public class TobiNetwork
             if (this.minDetectionScore <= detection_scores[i])
             {
                 float[] box = Arrays.copyOfRange(detection_boxes, i * 4, i * 4 + 4);
-                detectedObjects.add(new DetectedObject(box, detection_scores[i], this.detectedClassStrings[(int)detection_classes[i]]));
+                detectedObjects.add(new DetectedObject(box, detection_scores[i], (int)detection_classes[i]-1));
             }
         }
         return detectedObjects.toArray(new DetectedObject[0]);
+    }
+
+    @Override
+    public void run() {
+
     }
 
     public static class DetectedObject
     {
         private float[] box;
         private float score;
-        private String detectedClass;
+        private Constants.SIGNS detectedClass;
 
-        private DetectedObject(float[] box, float score, String detectedClass)
+        private DetectedObject(float[] box, float score, int detectedClass)
         {
             this.box = box;
             this.score = score;
-            this.detectedClass = detectedClass;
+            this.detectedClass = Constants.SIGNS.values()[detectedClass];
         }
 
         public  float[] getBox()
@@ -144,7 +147,7 @@ public class TobiNetwork
             return this.score;
         }
 
-        public String getDetectedClass()
+        public Constants.SIGNS getDetectedClass()
         {
             return this.detectedClass;
         }

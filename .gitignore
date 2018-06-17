@@ -7,6 +7,7 @@ app/app.iml
 local.properties
 .idea/
 .gradle/
+Tobi.iml
 
 #Tracked files
 !build.gradle
