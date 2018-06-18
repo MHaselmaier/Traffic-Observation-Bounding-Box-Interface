@@ -15,7 +15,7 @@ public class TobiNetwork
     private static final String[] OUTPUT_NODES = {"num_detections", "detection_boxes", "detection_scores", "detection_classes"};
 
     private TensorFlowInferenceInterface inferenceInterface;
-    private float minDetectionScore = 0.7f;
+    private float minDetectionScore = 0.0f;
 
     public TobiNetwork(Context context)
     {

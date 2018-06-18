@@ -48,21 +48,21 @@ public class SignsView extends FlexboxLayout
         switch (detectedClass)
         {
             case SPEED_LIMIT_30:
-                //return R.drawable.SPEED_LIMIT_30;
+                return R.drawable.speed_limit_30;
             case SPEED_LIMIT_50:
-                //return R.drawable.SPEED_LIMIT_50;
+                return R.drawable.speed_limit_50;
             case SPEED_LIMIT_60:
                 return R.drawable.speed_limit_60;
             case SPEED_LIMIT_70:
-                //return R.drawable.SPEED_LIMIT_70;
+                return R.drawable.speed_limit_70;
             case SPEED_LIMIT_80:
-                //return R.drawable.SPEED_LIMIT_80;
+                return R.drawable.speed_limit_80;
             case END_SPEED_LIMIT_80:
-                //return R.drawable.END_SPEED_LIMIT_80;
+                return R.drawable.end_speed_limit_80;
             case SPEED_LIMIT_100:
-                //return R.drawable.SPEED_LIMIT_100;
+                return R.drawable.speed_limit_100;
             case SPEED_LIMIT_120:
-                //return R.drawable.SPEED_LIMIT_120;
+                return R.drawable.speed_limit_120;
             case NO_OVERTAKING:
                 return R.drawable.no_overtaking;
             case NO_OVERTAKING_TRUCK:
@@ -135,13 +135,13 @@ public class SignsView extends FlexboxLayout
         return -1;
     }
 
-    public void updateSigns(TobiNetwork.DetectedObject[] detectedObjects)
-    {
-        for (TobiNetwork.DetectedObject detectedObject: detectedObjects)
-        {
+    public void updateSigns(TobiNetwork.DetectedObject[] detectedObjects) {
+        for (TobiNetwork.DetectedObject detectedObject : detectedObjects) {
             this.signsTiming[detectedObject.getDetectedClass().ordinal()] = SystemClock.uptimeMillis() + SignsView.SIGN_VISIBILITY_DURATION_MS;
         }
+    }
 
+    public void drawSigns() {
         for (int i = 0; this.signs.length > i; ++i)
         {
             if (this.signsTiming[i] > SystemClock.uptimeMillis())
@@ -150,7 +150,7 @@ public class SignsView extends FlexboxLayout
             }
             else
             {
-                this.signs[i].setVisibility(View.GONE);
+                this.signs[i].setVisibility(View.INVISIBLE);
             }
         }
     }

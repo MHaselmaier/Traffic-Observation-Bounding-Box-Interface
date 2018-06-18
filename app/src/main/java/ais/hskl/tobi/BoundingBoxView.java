@@ -115,29 +115,32 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        long start = System.nanoTime();
-
-        if(!isProcessing.get()) {
+        if(this.isProcessing.compareAndSet(false, true)) {
             AsyncTask.execute(() ->
             {
-                isProcessing.set(true);
+                long start = System.nanoTime();
 
                 Bitmap bitmap = Bitmap.createBitmap(BoundingBoxView.this.preview.getBitmap());
                 byte[] image = getImageData(bitmap);
 
                 TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, 1, bitmap.getHeight(), bitmap.getWidth(), 3);
+                if (0 < objects.length)
+                {
+                    drawBitmapWithBoundingBoxes(bitmap, objects);
+                }
+                this.signs.updateSigns(objects);
 
                 ((Activity) BoundingBoxView.this.context).runOnUiThread(() ->
                 {
-                    drawBitmapWithBoundingBoxes(bitmap, objects);
-                    this.signs.updateSigns(objects);
+                    this.boundingBox.invalidate();
+                    this.signs.drawSigns();
                 });
-                isProcessing.set(false);
+                this.isProcessing.set(false);
+
+                long end = System.nanoTime();
+                Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
             });
         }
-
-        long end = System.nanoTime();
-        Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
     }
 
     public void setupPreview()
@@ -188,13 +191,13 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         fontPaint.setTextSize(30);
 
         Canvas canvas = this.boundingBox.lockCanvas();
-
         if (null != canvas)
         {
             //clear canvas before drawing the new boxes
             canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
-            for (TobiNetwork.DetectedObject object : objects) {
+            for (TobiNetwork.DetectedObject object : objects)
+            {
                 float[] rect = object.getBox();
                 canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), boxPaint);
                 if (this.showDebugInfo)
