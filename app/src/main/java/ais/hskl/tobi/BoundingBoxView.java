@@ -1,12 +1,15 @@
 package ais.hskl.tobi;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.os.AsyncTask;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -16,6 +19,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("deprecation")
 public class BoundingBoxView extends ConstraintLayout implements TextureView.SurfaceTextureListener
@@ -27,6 +31,8 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     private TextureView boundingBox;
     private SignsView signs;
 
+    private AtomicBoolean isProcessing = new AtomicBoolean(false);
+
     private TobiNetwork tobi;
     private boolean showDebugInfo;
 
@@ -34,6 +40,8 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     private static final int BATCH_SIZE = 1;
     private static final int COLOR_CHANNELS = 3;
+
+    private static final int DETECTION_BOX_COLOR = Color.RED;
 
     private static final int COLOR_FRAME_SIZE = 3;
     private static final int RED = 0;
@@ -61,6 +69,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         this.preview = findViewById(R.id.textureBackground);
         this.preview.setSurfaceTextureListener(this);
         this.boundingBox = findViewById(R.id.textureForeground);
+        this.boundingBox.setOpaque(false);
         this.signs = findViewById(R.id.signs);
 
         if (this.preview.isAvailable())
@@ -102,20 +111,36 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     {
     }
 
+
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        Bitmap bitmap = this.preview.getBitmap();
-        byte[] image = getImageData(bitmap);
+        if(this.isProcessing.compareAndSet(false, true)) {
+            AsyncTask.execute(() ->
+            {
+                long start = System.nanoTime();
 
-        long start = System.nanoTime();
-        TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getHeight(), bitmap.getWidth());
-        long end = System.nanoTime();
-        Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
-        Log.d("ok", "DetectedObjects: " + objects.length);
+                Bitmap bitmap = Bitmap.createBitmap(BoundingBoxView.this.preview.getBitmap());
+                byte[] image = getImageData(bitmap);
 
-        drawBitmapWithBoundingBoxes(bitmap, objects);
-        this.signs.updateSigns(objects);
+                TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getWidth(), bitmap.getHeight());
+                if (0 < objects.length)
+                {
+                    drawBitmapWithBoundingBoxes(bitmap, objects);
+                }
+                this.signs.updateSigns(objects);
+
+                ((Activity) BoundingBoxView.this.context).runOnUiThread(() ->
+                {
+                    this.boundingBox.invalidate();
+                    this.signs.drawSigns();
+                });
+                this.isProcessing.set(false);
+
+                long end = System.nanoTime();
+                Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
+            });
+        }
     }
 
     public void setupPreview()
@@ -155,12 +180,12 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     private void drawBitmapWithBoundingBoxes(Bitmap bitmap, TobiNetwork.DetectedObject[] objects)
     {
         Paint boxPaint = new Paint();
-        boxPaint.setColor(Color.RED);
+        boxPaint.setColor(DETECTION_BOX_COLOR);
         boxPaint.setStyle(Paint.Style.STROKE);
         boxPaint.setStrokeWidth(5);
 
         Paint fontPaint = new Paint();
-        fontPaint.setColor(Color.RED);
+        fontPaint.setColor(DETECTION_BOX_COLOR);
         fontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         fontPaint.setStrokeWidth(1);
         fontPaint.setTextSize(30);
@@ -168,8 +193,11 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         Canvas canvas = this.boundingBox.lockCanvas();
         if (null != canvas)
         {
-            canvas.drawBitmap(bitmap, 0, 0, null);
-            for (TobiNetwork.DetectedObject object : objects) {
+            //clear canvas before drawing the new boxes
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
+            for (TobiNetwork.DetectedObject object : objects)
+            {
                 float[] rect = object.getBox();
                 canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), boxPaint);
                 if (this.showDebugInfo)
@@ -178,8 +206,9 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                     canvas.drawText((int)(object.getScore() * 100) + "% " + detectedClassString, rect[LEFT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight() + 30, fontPaint);
                 }
             }
+
+            this.boundingBox.unlockCanvasAndPost(canvas);
         }
-        this.boundingBox.unlockCanvasAndPost(canvas);
     }
 
     private void setupCameraInstance()
