@@ -4,26 +4,30 @@ import android.content.Context;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class TobiNetwork
 {
+    static
+    {
+        System.loadLibrary("tensorflow_inference");
+    }
+
     private static final String MODEL_FILE = "file:///android_asset/tobi-mobile.pb";
     private static final String INPUT_NODE = "image_tensor";
     private static final String[] OUTPUT_NODES = {"num_detections", "detection_boxes", "detection_scores", "detection_classes"};
 
+    private static final long INPUT_SHAPE_COLOR_CHANNELS = 3;
+    private static final long INPUT_SHAPE_NUMBER_OF_IMAGES = 1;
+
     private TensorFlowInferenceInterface inferenceInterface;
     private float minDetectionScore = 0.7f;
-    private String[] detectedClassStrings;
 
     public TobiNetwork(Context context)
     {
-        System.loadLibrary("tensorflow_inference");
         this.inferenceInterface = new TensorFlowInferenceInterface(context.getAssets(), MODEL_FILE);
-        this.detectedClassStrings = context.getResources().getStringArray(R.array.detection_classes);
     }
 
     public float getMinDetectionScore()
@@ -36,9 +40,9 @@ public class TobiNetwork
         this.minDetectionScore = minDetectionScore;
     }
 
-    public DetectedObject[] predict(byte[] image, long... dimensions)
+    public DetectedObject[] predict(byte[] image, long bitmapWidth, long bitmapHeight)
     {
-        this.inferenceInterface.feed(INPUT_NODE, image, dimensions);
+        this.inferenceInterface.feed(INPUT_NODE, image, INPUT_SHAPE_NUMBER_OF_IMAGES, bitmapHeight, bitmapWidth, INPUT_SHAPE_COLOR_CHANNELS);
         this.inferenceInterface.run(OUTPUT_NODES);
 
         float[] num_detections = new float[1];
@@ -69,7 +73,7 @@ public class TobiNetwork
             if (this.minDetectionScore <= detection_scores[i])
             {
                 float[] box = Arrays.copyOfRange(detection_boxes, i * 4, i * 4 + 4);
-                detectedObjects.add(new DetectedObject(box, detection_scores[i], this.detectedClassStrings[(int)detection_classes[i]]));
+                detectedObjects.add(new DetectedObject(box, detection_scores[i], (int)detection_classes[i]-1));
             }
         }
         return detectedObjects.toArray(new DetectedObject[0]);
@@ -79,13 +83,13 @@ public class TobiNetwork
     {
         private float[] box;
         private float score;
-        private String detectedClass;
+        private Constants.SIGNS detectedClass;
 
-        private DetectedObject(float[] box, float score, String detectedClass)
+        private DetectedObject(float[] box, float score, int detectedClass)
         {
             this.box = box;
             this.score = score;
-            this.detectedClass = detectedClass;
+            this.detectedClass = Constants.SIGNS.values()[detectedClass];
         }
 
         public  float[] getBox()
@@ -98,7 +102,7 @@ public class TobiNetwork
             return this.score;
         }
 
-        public String getDetectedClass()
+        public Constants.SIGNS getDetectedClass()
         {
             return this.detectedClass;
         }

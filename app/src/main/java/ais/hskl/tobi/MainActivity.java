@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Switch;
@@ -15,15 +14,12 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 42;
-
     private BoundingBoxView boundingBoxView;
-    private GpsHandler gpsHandler;
-    private TobiNetwork tobi;
-
     private Switch showDebugInfo;
+    private GpsHandler gpsHandler;
 
     @Override
-     protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -31,39 +27,29 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
-       // this.tobi = new TobiNetwork(this);
 
-        this.gpsHandler = new GpsHandler(this, (speed, lng, lat) -> {
-            Toast.makeText(this, String.format("Sp:%f,Lng:%f,Lat:%f", speed, lng, lat), Toast.LENGTH_LONG).show();
-        });
+        TobiNetwork tobi = new TobiNetwork(this);
 
-        //this.showDebugInfo = findViewById(R.id.debug);
-        /*this.showDebugInfo.setOnClickListener((v) -> {
-            if (null != MainActivity.this.boundingBoxView)
-            {
-                MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked());
-            }
-        });
+        this.boundingBoxView = findViewById(R.id.boundingBoxView);
+        this.boundingBoxView.setTobiNetwork(tobi);
 
+        this.showDebugInfo = findViewById(R.id.debug);
+        this.showDebugInfo.setOnClickListener((v) ->
+                MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked()));
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
-        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
-        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
+        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(tobi.getMinDetectionScore() * 100)));
+        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
-
-        */
     }
 
     @Override
     protected void onResume(){
         super.onResume();
 
-         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
-             // setupBoundingBoxView();
-         }
-         else {
-             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
-         }
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        }
     }
 
     @Override
@@ -78,10 +64,10 @@ public class MainActivity extends AppCompatActivity {
 
         switch(requestCode){
             case CAMERA_PERMISSION_CODE:
-                if(grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    //Start using the camera. All needed permissions are granted
-                    setupBoundingBoxView();
-                }else{
+                if(grantResults != null || grantResults.length > 0 || grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    this.boundingBoxView.setupPreview();
+                }
+                else {
                     Toast.makeText(this, "Die App benötigt die Berechtigung auf Ihre Kamera zuzugreifen!", Toast.LENGTH_LONG).show();
                     finish();
                 }
@@ -92,14 +78,5 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-    }
-
-    private void setupBoundingBoxView()
-    {
-        if (null == this.boundingBoxView)
-        {
-            this.boundingBoxView = new BoundingBoxView(this, findViewById(R.id.textureBackground), findViewById(R.id.textureForeground), this.tobi);
-            this.boundingBoxView.showDebugInfo(this.showDebugInfo.isChecked());
-        }
     }
 }

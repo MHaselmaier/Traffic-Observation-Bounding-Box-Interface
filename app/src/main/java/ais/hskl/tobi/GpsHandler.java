@@ -5,6 +5,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 public class GpsHandler implements LocationListener {
@@ -25,17 +26,20 @@ public class GpsHandler implements LocationListener {
 
     private double lastLat;
     private double lastLng;
+    private long lastTimestamp;
 
     @Override
     public void onLocationChanged(Location location) {
 
+        long currentStamp = System.currentTimeMillis();
         if(lastLat > 0 && lastLng > 0) {
-            String msg = String.format("Speed: %f", distanceByGeo(lastLat, lastLng, location.getLatitude(), location.getLongitude()));
+            String msg = String.format("Speed: %f", distanceByGeo(lastLat, lastLng, location.getLatitude(), location.getLongitude(), currentStamp, this.lastTimestamp));
             Toast.makeText(GpsHandler.this.context, msg, Toast.LENGTH_LONG).show();
         }
 
         this.lastLat = location.getLatitude();
         this.lastLng = location.getLongitude();
+        this.lastTimestamp = currentStamp;
     }
 
     @Override
@@ -53,33 +57,11 @@ public class GpsHandler implements LocationListener {
 
     }
 
-    private static double r = 6378100;
-    private static double distanceByGeo(double lat1, double lng1, double lat2, double lng2){
-        lat1 = lat1 * Math.PI / 180.0;
-        lng1 = lng1 * Math.PI / 180.0;
+    private static double distanceByGeo(double lat1, double lng1, double lat2, double lng2, long timestampFirst, long timestampSecond){
 
-        lat2 = lat2 * Math.PI / 180.0;
-        lng2 = lng2 * Math.PI / 180.0;
+        float[] result = new float[2];
+        Location.distanceBetween(lat1, lng1, lat2, lng2, result);
 
-        double rho1 = r * Math.cos(lat1);
-        double z1 = r * Math.sin(lat1);
-
-        double x1 = rho1 * Math.cos(lng1);
-        double y1 = rho1 * Math.sin(lng1);
-
-        // Q
-        double rho2 = r * Math.cos(lat2);
-        double z2 = r * Math.sin(lat2);
-        double x2 = rho2 * Math.cos(lng2);
-        double y2 = rho2 * Math.sin(lng2);
-
-        // Dot product
-        double dot = (x1 * x2 + y1 * y2 + z1 * z2);
-        double cos_theta = dot / (r * r);
-
-        double theta = Math.acos(cos_theta);
-
-        // Distance in Metres
-        return r * theta;
+        return ((result[0] / (timestampSecond - timestampFirst)) * 3.6);
     }
 }

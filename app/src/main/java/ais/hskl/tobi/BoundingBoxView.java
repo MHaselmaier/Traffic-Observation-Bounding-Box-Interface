@@ -1,31 +1,36 @@
 package ais.hskl.tobi;
 
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.support.constraint.ConstraintLayout;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.IOException;
 
-
 @SuppressWarnings("deprecation")
-public class BoundingBoxView implements TextureView.SurfaceTextureListener
+public class BoundingBoxView extends ConstraintLayout implements TextureView.SurfaceTextureListener
 {
-    private Activity activity;
+    private Context context;
     private int cameraID;
     private Camera camera;
     private TextureView preview;
     private TextureView boundingBox;
+    private SignsView signs;
 
     private TobiNetwork tobi;
     private boolean showDebugInfo;
+
+    private String[] detectedClasses;
 
     private static final int BATCH_SIZE = 1;
     private static final int COLOR_CHANNELS = 3;
@@ -40,19 +45,33 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     private static final int BOTTOM = 2;
     private static final int RIGHT = 3;
 
-    public BoundingBoxView(Activity activity, TextureView preview, TextureView boundingBox, TobiNetwork tobi)
+    public BoundingBoxView(Context context, AttributeSet attrs)
     {
-        this.activity = activity;
-        this.preview = preview;
+        super(context, attrs);
+        this.context = context;
+    }
+
+    @Override
+    public void onLayout(boolean changed, int left, int top, int right, int bottom)
+    {
+        super.onLayout(changed, left, top, right, bottom);
+
+        this.detectedClasses = this.context.getResources().getStringArray(R.array.detection_classes);
+
+        this.preview = findViewById(R.id.textureBackground);
         this.preview.setSurfaceTextureListener(this);
-        this.boundingBox = boundingBox;
-        this.boundingBox.setOpaque(true);
-        this.tobi = tobi;
+        this.boundingBox = findViewById(R.id.textureForeground);
+        this.signs = findViewById(R.id.signs);
 
         if (this.preview.isAvailable())
         {
-            setupPreview(this.preview.getSurfaceTexture());
+            setupPreview();
         }
+    }
+
+    public void setTobiNetwork(TobiNetwork tobi)
+    {
+        this.tobi = tobi;
     }
 
     public void showDebugInfo(boolean showDebugInfo)
@@ -63,7 +82,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        setupPreview(surface);
+        setupPreview();
     }
 
     @Override
@@ -90,27 +109,28 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         byte[] image = getImageData(bitmap);
 
         long start = System.nanoTime();
-        TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, 1, bitmap.getHeight(), bitmap.getWidth(), 3);
+        TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getHeight(), bitmap.getWidth());
         long end = System.nanoTime();
         Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
         Log.d("ok", "DetectedObjects: " + objects.length);
 
         drawBitmapWithBoundingBoxes(bitmap, objects);
+        this.signs.updateSigns(objects);
     }
 
-    private void setupPreview(SurfaceTexture surface)
+    public void setupPreview()
     {
         setupCameraInstance();
         if (null != this.camera)
         {
             try
             {
-                this.camera.setPreviewTexture(surface);
+                this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
                 this.camera.startPreview();
             }
             catch (IOException ioe)
             {
-                Toast.makeText(this.activity, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
                 Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
             }
         }
@@ -154,12 +174,12 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
                 canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), boxPaint);
                 if (this.showDebugInfo)
                 {
-                    canvas.drawText((int)(object.getScore() * 100) + "% " + object.getDetectedClass(), rect[LEFT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight() + 30, fontPaint);
+                    String detectedClassString = this.detectedClasses[object.getDetectedClass().ordinal()];
+                    canvas.drawText((int)(object.getScore() * 100) + "% " + detectedClassString, rect[LEFT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight() + 30, fontPaint);
                 }
             }
         }
         this.boundingBox.unlockCanvasAndPost(canvas);
-
     }
 
     private void setupCameraInstance()
@@ -173,7 +193,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         }
         catch(Exception e)
         {
-            Toast.makeText(this.activity, "Es konnte nicht auf die Kamera zugegriffen werden!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this.context, "Es konnte nicht auf die Kamera zugegriffen werden!", Toast.LENGTH_LONG).show();
             Log.e(BoundingBoxView.class.getSimpleName(), e.toString());
         }
     }
@@ -195,22 +215,23 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
 
     private void setupCameraOrientation()
     {
-        int rotation = this.activity.getWindowManager().getDefaultDisplay().getRotation();
+        WindowManager windowManager = (WindowManager)this.context.getSystemService(Context.WINDOW_SERVICE);
+        int rotation = windowManager.getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation)
         {
-        case Surface.ROTATION_0:
-            degrees = 0;
-            break;
-        case Surface.ROTATION_90:
-            degrees = 90;
-            break;
-        case Surface.ROTATION_180:
-            degrees = 180;
-            break;
-        case Surface.ROTATION_270:
-            degrees = 270;
-            break;
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
         }
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(this.cameraID, info);

@@ -1,0 +1,50 @@
+package ais.hskl.tobi;
+
+public interface Constants
+{
+    public static enum SIGNS
+    {
+        SPEED_LIMIT_30,
+        SPEED_LIMIT_50,
+        SPEED_LIMIT_60,
+        SPEED_LIMIT_70,
+        SPEED_LIMIT_80,
+        END_SPEED_LIMIT_80,
+        SPEED_LIMIT_100,
+        SPEED_LIMIT_120,
+        NO_OVERTAKING,
+        NO_OVERTAKING_TRUCK,
+        RIGHT_OF_WAY,
+        MAJOR_ROAD,
+        GIVE_WAY,
+        STOP,
+        RESTRICTION_ALL,
+        RESTRICTION_TRUCK,
+        RESTRICTION_ENTRY,
+        DANGER,
+        CURVE_LEFT,
+        CURVE_RIGHT,
+        DOUBLE_CURVE,
+        UNEVEN_ROAD,
+        SLIPPERY_ROAD,
+        NARROW_ROAD,
+        CONSTRUCTION,
+        TRAFFIC_LIGHT,
+        PEDESTRIAN,
+        CHILDREN,
+        BIKE,
+        SNOW_ICE,
+        ANIMALS,
+        END_RESTRICTION_ALL,
+        RIGHT,
+        LEFT,
+        STRAIGHT,
+        RIGHT_OR_STRAIGHT,
+        LEFT_OR_STRAIGHT,
+        PASS_RIGHT,
+        PASS_LEFT,
+        ROUND_ABOUT,
+        END_NO_OVERTAKING,
+        END_NO_OVERTAKING_TRUCKS
+    }
+}
