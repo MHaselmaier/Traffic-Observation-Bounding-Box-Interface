@@ -10,16 +10,23 @@ import java.util.List;
 
 public class TobiNetwork
 {
+    static
+    {
+        System.loadLibrary("tensorflow_inference");
+    }
+
     private static final String MODEL_FILE = "file:///android_asset/tobi-mobile.pb";
     private static final String INPUT_NODE = "image_tensor";
     private static final String[] OUTPUT_NODES = {"num_detections", "detection_boxes", "detection_scores", "detection_classes"};
+
+    private static final long INPUT_SHAPE_COLOR_CHANNELS = 3;
+    private static final long INPUT_SHAPE_NUMBER_OF_IMAGES = 1;
 
     private TensorFlowInferenceInterface inferenceInterface;
     private float minDetectionScore = 0.0f;
 
     public TobiNetwork(Context context)
     {
-        System.loadLibrary("tensorflow_inference");
         this.inferenceInterface = new TensorFlowInferenceInterface(context.getAssets(), MODEL_FILE);
     }
 
@@ -33,9 +40,9 @@ public class TobiNetwork
         this.minDetectionScore = minDetectionScore;
     }
 
-    public DetectedObject[] predict(byte[] image, long... dimensions)
+    public DetectedObject[] predict(byte[] image, long bitmapWidth, long bitmapHeight)
     {
-        this.inferenceInterface.feed(INPUT_NODE, image, dimensions);
+        this.inferenceInterface.feed(INPUT_NODE, image, INPUT_SHAPE_NUMBER_OF_IMAGES, bitmapHeight, bitmapWidth, INPUT_SHAPE_COLOR_CHANNELS);
         this.inferenceInterface.run(OUTPUT_NODES);
 
         float[] num_detections = new float[1];

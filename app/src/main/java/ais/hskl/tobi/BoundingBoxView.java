@@ -123,7 +123,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                 Bitmap bitmap = Bitmap.createBitmap(BoundingBoxView.this.preview.getBitmap());
                 byte[] image = getImageData(bitmap);
 
-                TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, 1, bitmap.getHeight(), bitmap.getWidth(), 3);
+                TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getWidth(), bitmap.getHeight());
                 if (0 < objects.length)
                 {
                     drawBitmapWithBoundingBoxes(bitmap, objects);
@@ -249,18 +249,18 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         int degrees = 0;
         switch (rotation)
         {
-        case Surface.ROTATION_0:
-            degrees = 0;
-            break;
-        case Surface.ROTATION_90:
-            degrees = 90;
-            break;
-        case Surface.ROTATION_180:
-            degrees = 180;
-            break;
-        case Surface.ROTATION_270:
-            degrees = 270;
-            break;
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
         }
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(this.cameraID, info);

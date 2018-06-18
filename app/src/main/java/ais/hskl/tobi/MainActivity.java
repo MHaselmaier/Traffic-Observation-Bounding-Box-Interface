@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private Switch showDebugInfo;
 
     @Override
-     protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.showDebugInfo = findViewById(R.id.debug);
         this.showDebugInfo.setOnClickListener((v) ->
-            MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked()));
+                MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked()));
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(tobi.getMinDetectionScore() * 100)));
@@ -46,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
 
-         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-              ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
-         }
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        }
     }
 
     @Override
