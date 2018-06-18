@@ -1,34 +1,47 @@
 package ais.hskl.tobi;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.os.AsyncTask;
+import android.support.constraint.ConstraintLayout;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.IOException;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("deprecation")
-public class BoundingBoxView implements TextureView.SurfaceTextureListener
+public class BoundingBoxView extends ConstraintLayout implements TextureView.SurfaceTextureListener
 {
-    private Activity activity;
+    private Context context;
     private int cameraID;
     private Camera camera;
     private TextureView preview;
     private TextureView boundingBox;
+    private SignsView signs;
+
+    private AtomicBoolean isProcessing = new AtomicBoolean(false);
 
     private TobiNetwork tobi;
     private boolean showDebugInfo;
 
+    private String[] detectedClasses;
+
     private static final int BATCH_SIZE = 1;
     private static final int COLOR_CHANNELS = 3;
+
+    private static final int DETECTION_BOX_COLOR = Color.RED;
 
     private static final int COLOR_FRAME_SIZE = 3;
     private static final int RED = 0;
@@ -40,19 +53,34 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     private static final int BOTTOM = 2;
     private static final int RIGHT = 3;
 
-    public BoundingBoxView(Activity activity, TextureView preview, TextureView boundingBox, TobiNetwork tobi)
+    public BoundingBoxView(Context context, AttributeSet attrs)
     {
-        this.activity = activity;
-        this.preview = preview;
+        super(context, attrs);
+        this.context = context;
+    }
+
+    @Override
+    public void onLayout(boolean changed, int left, int top, int right, int bottom)
+    {
+        super.onLayout(changed, left, top, right, bottom);
+
+        this.detectedClasses = this.context.getResources().getStringArray(R.array.detection_classes);
+
+        this.preview = findViewById(R.id.textureBackground);
         this.preview.setSurfaceTextureListener(this);
-        this.boundingBox = boundingBox;
-        this.boundingBox.setOpaque(true);
-        this.tobi = tobi;
+        this.boundingBox = findViewById(R.id.textureForeground);
+        this.boundingBox.setOpaque(false);
+        this.signs = findViewById(R.id.signs);
 
         if (this.preview.isAvailable())
         {
-            setupPreview(this.preview.getSurfaceTexture());
+            setupPreview();
         }
+    }
+
+    public void setTobiNetwork(TobiNetwork tobi)
+    {
+        this.tobi = tobi;
     }
 
     public void showDebugInfo(boolean showDebugInfo)
@@ -63,7 +91,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
     {
-        setupPreview(surface);
+        setupPreview();
     }
 
     @Override
@@ -83,34 +111,51 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     {
     }
 
+
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        Bitmap bitmap = this.preview.getBitmap();
-        byte[] image = getImageData(bitmap);
+        if(this.isProcessing.compareAndSet(false, true)) {
+            AsyncTask.execute(() ->
+            {
+                long start = System.nanoTime();
 
-        long start = System.nanoTime();
-        TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, 1, bitmap.getHeight(), bitmap.getWidth(), 3);
-        long end = System.nanoTime();
-        Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
-        Log.d("ok", "DetectedObjects: " + objects.length);
+                Bitmap bitmap = Bitmap.createBitmap(BoundingBoxView.this.preview.getBitmap());
+                byte[] image = getImageData(bitmap);
 
-        drawBitmapWithBoundingBoxes(bitmap, objects);
+                TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getWidth(), bitmap.getHeight());
+                if (0 < objects.length)
+                {
+                    drawBitmapWithBoundingBoxes(bitmap, objects);
+                }
+                this.signs.updateSigns(objects);
+
+                ((Activity) BoundingBoxView.this.context).runOnUiThread(() ->
+                {
+                    this.boundingBox.invalidate();
+                    this.signs.drawSigns();
+                });
+                this.isProcessing.set(false);
+
+                long end = System.nanoTime();
+                Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
+            });
+        }
     }
 
-    private void setupPreview(SurfaceTexture surface)
+    public void setupPreview()
     {
         setupCameraInstance();
         if (null != this.camera)
         {
             try
             {
-                this.camera.setPreviewTexture(surface);
+                this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
                 this.camera.startPreview();
             }
             catch (IOException ioe)
             {
-                Toast.makeText(this.activity, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
                 Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
             }
         }
@@ -135,12 +180,12 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
     private void drawBitmapWithBoundingBoxes(Bitmap bitmap, TobiNetwork.DetectedObject[] objects)
     {
         Paint boxPaint = new Paint();
-        boxPaint.setColor(Color.RED);
+        boxPaint.setColor(DETECTION_BOX_COLOR);
         boxPaint.setStyle(Paint.Style.STROKE);
         boxPaint.setStrokeWidth(5);
 
         Paint fontPaint = new Paint();
-        fontPaint.setColor(Color.RED);
+        fontPaint.setColor(DETECTION_BOX_COLOR);
         fontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         fontPaint.setStrokeWidth(1);
         fontPaint.setTextSize(30);
@@ -148,18 +193,22 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         Canvas canvas = this.boundingBox.lockCanvas();
         if (null != canvas)
         {
-            canvas.drawBitmap(bitmap, 0, 0, null);
-            for (TobiNetwork.DetectedObject object : objects) {
+            //clear canvas before drawing the new boxes
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
+            for (TobiNetwork.DetectedObject object : objects)
+            {
                 float[] rect = object.getBox();
                 canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), boxPaint);
                 if (this.showDebugInfo)
                 {
-                    canvas.drawText((int)(object.getScore() * 100) + "% " + object.getDetectedClass(), rect[LEFT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight() + 30, fontPaint);
+                    String detectedClassString = this.detectedClasses[object.getDetectedClass().ordinal()];
+                    canvas.drawText((int)(object.getScore() * 100) + "% " + detectedClassString, rect[LEFT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight() + 30, fontPaint);
                 }
             }
-        }
-        this.boundingBox.unlockCanvasAndPost(canvas);
 
+            this.boundingBox.unlockCanvasAndPost(canvas);
+        }
     }
 
     private void setupCameraInstance()
@@ -173,7 +222,7 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
         }
         catch(Exception e)
         {
-            Toast.makeText(this.activity, "Es konnte nicht auf die Kamera zugegriffen werden!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this.context, "Es konnte nicht auf die Kamera zugegriffen werden!", Toast.LENGTH_LONG).show();
             Log.e(BoundingBoxView.class.getSimpleName(), e.toString());
         }
     }
@@ -195,22 +244,23 @@ public class BoundingBoxView implements TextureView.SurfaceTextureListener
 
     private void setupCameraOrientation()
     {
-        int rotation = this.activity.getWindowManager().getDefaultDisplay().getRotation();
+        WindowManager windowManager = (WindowManager)this.context.getSystemService(Context.WINDOW_SERVICE);
+        int rotation = windowManager.getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation)
         {
-        case Surface.ROTATION_0:
-            degrees = 0;
-            break;
-        case Surface.ROTATION_90:
-            degrees = 90;
-            break;
-        case Surface.ROTATION_180:
-            degrees = 180;
-            break;
-        case Surface.ROTATION_270:
-            degrees = 270;
-            break;
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
         }
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(this.cameraID, info);
