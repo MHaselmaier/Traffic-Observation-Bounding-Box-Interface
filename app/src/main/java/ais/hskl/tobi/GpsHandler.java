@@ -33,7 +33,7 @@ public class GpsHandler implements LocationListener {
 
         long currentStamp = System.currentTimeMillis();
         if(lastLat > 0 && lastLng > 0) {
-            String msg = String.format("Speed: %f", distanceByGeo(lastLat, lastLng, location.getLatitude(), location.getLongitude(), currentStamp, this.lastTimestamp));
+            String msg = String.format("Speed: %f", distanceByGeo(lastLat, lastLng, location.getLatitude(), location.getLongitude(), this.lastTimestamp, currentStamp));
             Toast.makeText(GpsHandler.this.context, msg, Toast.LENGTH_LONG).show();
         }
 
@@ -62,6 +62,8 @@ public class GpsHandler implements LocationListener {
         float[] result = new float[2];
         Location.distanceBetween(lat1, lng1, lat2, lng2, result);
 
-        return ((result[0] / (timestampSecond - timestampFirst)) * 3.6);
+        Log.i("Distance: ", "" + result[0]);
+
+        return ((result[0] / ((timestampSecond - timestampFirst) / 1000.0)) * 3.6);
     }
 }

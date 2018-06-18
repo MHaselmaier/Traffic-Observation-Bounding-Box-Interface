@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Switch;
@@ -28,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        gpsHandler = new GpsHandler(this, (speed, latitude, longitude) -> {
+            Log.i("Speed: ", "" + speed);
+        });
         TobiNetwork tobi = new TobiNetwork(this);
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
