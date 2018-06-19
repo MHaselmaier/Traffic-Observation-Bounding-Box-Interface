@@ -11,11 +11,14 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity
+{
+    private static final String TOBI_NETWORK_KEY = "tobi";
     private static final int CAMERA_PERMISSION_CODE = 42;
     private BoundingBoxView boundingBoxView;
     private Switch showDebugInfo;
+
+    private TobiNetwork tobi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,18 +30,25 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        TobiNetwork tobi = new TobiNetwork(this);
+        if (null == savedInstanceState)
+        {
+            this.tobi = new TobiNetwork(this);
+        }
+        else
+        {
+            this.tobi = (TobiNetwork)savedInstanceState.getSerializable(TOBI_NETWORK_KEY);
+        }
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
-        this.boundingBoxView.setTobiNetwork(tobi);
+        this.boundingBoxView.setTobiNetwork(this.tobi);
 
         this.showDebugInfo = findViewById(R.id.debug);
         this.showDebugInfo.setOnClickListener((v) ->
                 MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked()));
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
-        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(tobi.getMinDetectionScore() * 100)));
-        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, tobi);
+        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
     }
 
@@ -77,5 +87,13 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState)
+    {
+        savedInstanceState.putSerializable(TOBI_NETWORK_KEY, this.tobi);
+
+        super.onSaveInstanceState(savedInstanceState);
     }
 }
