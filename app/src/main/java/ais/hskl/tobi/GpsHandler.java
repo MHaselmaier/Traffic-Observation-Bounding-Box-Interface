@@ -17,23 +17,34 @@ public class GpsHandler implements LocationListener {
     {
         this.speedListener = speedListener;
         this.context = context;
-
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
-        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
     private double lastLat;
     private double lastLng;
     private long lastTimestamp;
 
+    public void start()
+    {
+        Log.i("GPS:", "Setting listener and starting gps");
+        LocationManager locationManager =  (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    }
+
+    public void stop()
+    {
+        Log.i("GPS:", "Stopping gps requests");
+        LocationManager locationManager =  (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(this);
+    }
+
     @Override
     public void onLocationChanged(Location location) {
 
         long currentStamp = System.currentTimeMillis();
         if(lastLat > 0 && lastLng > 0) {
-            String msg = String.format("Speed: %f", distanceByGeo(lastLat, lastLng, location.getLatitude(), location.getLongitude(), this.lastTimestamp, currentStamp));
+            String msg = String.format("Speed: %f", distanceByGeoInformation(lastLat, lastLng, location.getLatitude(), location.getLongitude(), this.lastTimestamp, currentStamp));
             Toast.makeText(GpsHandler.this.context, msg, Toast.LENGTH_LONG).show();
         }
 
@@ -57,7 +68,7 @@ public class GpsHandler implements LocationListener {
 
     }
 
-    private static double distanceByGeo(double lat1, double lng1, double lat2, double lng2, long timestampFirst, long timestampSecond){
+    private static double distanceByGeoInformation(double lat1, double lng1, double lat2, double lng2, long timestampFirst, long timestampSecond){
 
         float[] result = new float[2];
         Location.distanceBetween(lat1, lng1, lat2, lng2, result);
@@ -65,5 +76,9 @@ public class GpsHandler implements LocationListener {
         Log.i("Distance: ", "" + result[0]);
 
         return ((result[0] / ((timestampSecond - timestampFirst) / 1000.0)) * 3.6);
+    }
+
+    public interface SpeedChangedListener {
+        void onSpeedChanged(float speed, double latitude, double longitude);
     }
 }
