@@ -8,8 +8,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -29,7 +31,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     private Camera camera;
     private TextureView preview;
     private TextureView boundingBox;
-    private SignsView signs;
 
     private AtomicBoolean isProcessing = new AtomicBoolean(false);
 
@@ -37,6 +38,9 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     private boolean showDebugInfo;
 
     private String[] detectedClasses;
+    private Drawable[] signs;
+    private long[] signsTiming;
+    private int signSize;
 
     private static final int BATCH_SIZE = 1;
     private static final int COLOR_CHANNELS = 3;
@@ -57,6 +61,21 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     {
         super(context, attrs);
         this.context = context;
+
+        loadSigns();
+    }
+
+    private void loadSigns()
+    {
+        this.signSize = this.context.getResources().getDimensionPixelSize(R.dimen.sign_size);
+
+        Constants.SIGNS[] definedSigns = Constants.SIGNS.values();
+        this.signs = new Drawable[definedSigns.length];
+        this.signsTiming = new long[definedSigns.length];
+        for (int i = 0; this.signs.length > i; ++i)
+        {
+            this.signs[i] = this.context.getResources().getDrawable(Constants.SIGNS.mapSignToImageResource(definedSigns[i]));
+        }
     }
 
     @Override
@@ -70,7 +89,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         this.preview.setSurfaceTextureListener(this);
         this.boundingBox = findViewById(R.id.textureForeground);
         this.boundingBox.setOpaque(false);
-        this.signs = findViewById(R.id.signs);
 
         if (this.preview.isAvailable())
         {
@@ -124,16 +142,22 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                 byte[] image = getImageData(bitmap);
 
                 TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getWidth(), bitmap.getHeight());
-                if (0 < objects.length)
+                Canvas canvas = this.boundingBox.lockCanvas();
+                if (null != canvas)
                 {
-                    drawBitmapWithBoundingBoxes(bitmap, objects);
+                    //clear canvas before drawing the new boxes
+                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                    if (0 < objects.length)
+                    {
+                        drawBoundingBoxes(canvas, objects);
+                    }
+                    drawSigns(canvas, objects);
+                    this.boundingBox.unlockCanvasAndPost(canvas);
                 }
-                this.signs.updateSigns(objects);
 
                 ((Activity) BoundingBoxView.this.context).runOnUiThread(() ->
                 {
                     this.boundingBox.invalidate();
-                    this.signs.drawSigns();
                 });
                 this.isProcessing.set(false);
 
@@ -177,7 +201,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         return image;
     }
 
-    private void drawBitmapWithBoundingBoxes(Bitmap bitmap, TobiNetwork.DetectedObject[] objects)
+    private void drawBoundingBoxes(Canvas canvas, TobiNetwork.DetectedObject[] detectedObjects)
     {
         Paint boxPaint = new Paint();
         boxPaint.setColor(DETECTION_BOX_COLOR);
@@ -190,24 +214,39 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         fontPaint.setStrokeWidth(1);
         fontPaint.setTextSize(30);
 
-        Canvas canvas = this.boundingBox.lockCanvas();
-        if (null != canvas)
+        for (TobiNetwork.DetectedObject object : detectedObjects)
         {
-            //clear canvas before drawing the new boxes
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-
-            for (TobiNetwork.DetectedObject object : objects)
+            float[] rect = object.getBox();
+            canvas.drawRect(rect[LEFT] * canvas.getWidth(), rect[TOP] * canvas.getHeight(), rect[RIGHT] * canvas.getWidth(), rect[BOTTOM] * canvas.getHeight(), boxPaint);
+            if (this.showDebugInfo)
             {
-                float[] rect = object.getBox();
-                canvas.drawRect(rect[LEFT] * bitmap.getWidth(), rect[TOP] * bitmap.getHeight(), rect[RIGHT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight(), boxPaint);
-                if (this.showDebugInfo)
-                {
-                    String detectedClassString = this.detectedClasses[object.getDetectedClass().ordinal()];
-                    canvas.drawText((int)(object.getScore() * 100) + "% " + detectedClassString, rect[LEFT] * bitmap.getWidth(), rect[BOTTOM] * bitmap.getHeight() + 30, fontPaint);
-                }
+                String detectedClassString = this.detectedClasses[object.getDetectedClass().ordinal()];
+                canvas.drawText((int)(object.getScore() * 100) + "% " + detectedClassString, rect[LEFT] * canvas.getWidth(), rect[BOTTOM] * canvas.getHeight() + 30, fontPaint);
             }
+        }
+    }
 
-            this.boundingBox.unlockCanvasAndPost(canvas);
+    private void drawSigns(Canvas canvas, TobiNetwork.DetectedObject[] detectedObjects)
+    {
+        updateSignsTiming(detectedObjects);
+
+        int count = 0;
+        for (int i = 0; this.signsTiming.length > i; ++i)
+        {
+            if (SystemClock.uptimeMillis() < this.signsTiming[i])
+            {
+                this.signs[i].setBounds(count * this.signSize, canvas.getHeight() - this.signSize, (count + 1) * this.signSize, canvas.getHeight());
+                this.signs[i].draw(canvas);
+                ++count;
+            }
+        }
+    }
+
+    private void updateSignsTiming(TobiNetwork.DetectedObject[] detectedObjects)
+    {
+        for (TobiNetwork.DetectedObject detectedObject: detectedObjects)
+        {
+            this.signsTiming[detectedObject.getDetectedClass().ordinal()] = SystemClock.uptimeMillis() + 3000;
         }
     }
 
