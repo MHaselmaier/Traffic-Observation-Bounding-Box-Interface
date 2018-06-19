@@ -155,10 +155,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                     this.boundingBox.unlockCanvasAndPost(canvas);
                 }
 
-                ((Activity) BoundingBoxView.this.context).runOnUiThread(() ->
-                {
-                    this.boundingBox.invalidate();
-                });
                 this.isProcessing.set(false);
 
                 long end = System.nanoTime();
