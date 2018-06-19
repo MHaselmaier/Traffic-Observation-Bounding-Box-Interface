@@ -40,14 +40,7 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         setContentView(R.layout.activity_main);
 
         this.gpsHandler = new GpsHandler(this, this);
-        if (null == savedInstanceState)
-        {
-            this.tobi = new TobiNetwork(this);
-        }
-        else
-        {
-            this.tobi = (TobiNetwork)savedInstanceState.getSerializable(TOBI_NETWORK_KEY);
-        }
+        this.tobi = new TobiNetwork(this);
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
         this.boundingBoxView.setTobiNetwork(this.tobi);
@@ -171,8 +164,6 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState)
     {
-        savedInstanceState.putSerializable(TOBI_NETWORK_KEY, this.tobi);
-
         super.onSaveInstanceState(savedInstanceState);
     }
 }
