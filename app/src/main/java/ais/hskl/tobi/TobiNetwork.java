@@ -4,11 +4,12 @@ import android.content.Context;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TobiNetwork
+public class TobiNetwork implements Serializable
 {
     static
     {

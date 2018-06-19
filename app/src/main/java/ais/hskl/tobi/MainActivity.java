@@ -19,13 +19,15 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedChangedListener{
-
+    private static final String TOBI_NETWORK_KEY = "tobi";
     private static final int CAMERA_PERMISSION_CODE = 42;
     private static final int GPS_PERMISSION_CODE = 43;
     private BoundingBoxView boundingBoxView;
     private Switch showDebugInfo;
     private Switch enableGps;
     private GpsHandler gpsHandler;
+
+    private TobiNetwork tobi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +39,18 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
 
         setContentView(R.layout.activity_main);
 
-        TobiNetwork tobi = new TobiNetwork(this);
         this.gpsHandler = new GpsHandler(this, this);
+        if (null == savedInstanceState)
+        {
+            this.tobi = new TobiNetwork(this);
+        }
+        else
+        {
+            this.tobi = (TobiNetwork)savedInstanceState.getSerializable(TOBI_NETWORK_KEY);
+        }
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
-        this.boundingBoxView.setTobiNetwork(tobi);
+        this.boundingBoxView.setTobiNetwork(this.tobi);
 
         this.showDebugInfo = findViewById(R.id.debug);
         this.showDebugInfo.setOnClickListener((v) ->
@@ -71,8 +80,8 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         });
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
-        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(tobi.getMinDetectionScore() * 100)));
-        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, tobi);
+        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
     }
 
@@ -157,5 +166,13 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         }
 
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState)
+    {
+        savedInstanceState.putSerializable(TOBI_NETWORK_KEY, this.tobi);
+
+        super.onSaveInstanceState(savedInstanceState);
     }
 }
