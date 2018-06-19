@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Switch;
@@ -30,14 +31,7 @@ public class MainActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_main);
 
-        if (null == savedInstanceState)
-        {
-            this.tobi = new TobiNetwork(this);
-        }
-        else
-        {
-            this.tobi = (TobiNetwork)savedInstanceState.getSerializable(TOBI_NETWORK_KEY);
-        }
+        this.tobi = new TobiNetwork(this);
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
         this.boundingBoxView.setTobiNetwork(this.tobi);
@@ -92,8 +86,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState)
     {
-        savedInstanceState.putSerializable(TOBI_NETWORK_KEY, this.tobi);
-
         super.onSaveInstanceState(savedInstanceState);
     }
 }
