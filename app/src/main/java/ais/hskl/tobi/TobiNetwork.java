@@ -73,6 +73,11 @@ public class TobiNetwork
             if (this.minDetectionScore <= detection_scores[i])
             {
                 float[] box = Arrays.copyOfRange(detection_boxes, i * 4, i * 4 + 4);
+                if (1e-5 > Math.abs(box[0] - box[2]) || 1e-5 > Math.abs(box[1] - box[3]))
+                {
+                    continue;
+                }
+
                 detectedObjects.add(new DetectedObject(box, detection_scores[i], (int)detection_classes[i]-1));
             }
         }
