@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("deprecation")
@@ -135,11 +136,10 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                 {
                     //clear canvas before drawing the new boxes
                     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                    if (0 < objects.length)
-                    {
-                        drawBoundingBoxes(canvas, objects);
-                    }
+                    drawBoundingBoxes(canvas, objects);
                     drawSigns(canvas, objects);
+                    drawFPS(canvas, start);
+
                     this.boundingBox.unlockCanvasAndPost(canvas);
                 }
 
@@ -222,6 +222,21 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                 this.signs[i].draw(canvas);
                 ++count;
             }
+        }
+    }
+
+    private void drawFPS(Canvas canvas, long start)
+    {
+        if (this.showDebugInfo)
+        {
+            Paint fontPaint = new Paint();
+            fontPaint.setColor(DETECTION_BOX_COLOR);
+            fontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            fontPaint.setStrokeWidth(1);
+            fontPaint.setTextSize(30);
+
+            float fps = 1_000_000_000f / (System.nanoTime() - start);
+            canvas.drawText(String.format(Locale.getDefault(), "%.1f FPS", fps), canvas.getWidth() - 105, 30, fontPaint);
         }
     }
 
