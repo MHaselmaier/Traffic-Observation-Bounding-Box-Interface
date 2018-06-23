@@ -88,11 +88,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         this.preview.setSurfaceTextureListener(this);
         this.boundingBox = findViewById(R.id.textureForeground);
         this.boundingBox.setOpaque(false);
-
-        if (this.preview.isAvailable())
-        {
-            setupPreview();
-        }
     }
 
     public void setTobiNetwork(TobiNetwork tobi)
@@ -114,12 +109,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface)
     {
-        if (null != this.camera)
-        {
-            this.camera.stopPreview();
-            this.camera.release();
-            return true;
-        }
         return false;
     }
 
@@ -164,18 +153,17 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     public void setupPreview()
     {
-        setupCameraInstance();
-        if (null != this.camera)
+        if (null != this.preview && this.preview.isAvailable())
         {
-            try
-            {
-                this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
-                this.camera.startPreview();
-            }
-            catch (IOException ioe)
-            {
-                Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
-                Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
+            setupCameraInstance();
+            if (null != this.camera) {
+                try {
+                    this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
+                    this.camera.startPreview();
+                } catch (IOException ioe) {
+                    Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+                    Log.e(BoundingBoxView.class.getSimpleName(), ioe.toString());
+                }
             }
         }
     }
@@ -312,6 +300,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     {
         if (null != this.camera)
         {
+            this.camera.stopPreview();
             this.camera.release();
         }
     }
