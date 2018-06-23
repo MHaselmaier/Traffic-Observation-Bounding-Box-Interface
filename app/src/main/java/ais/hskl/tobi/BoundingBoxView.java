@@ -1,6 +1,5 @@
 package ais.hskl.tobi;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -307,5 +306,13 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         Camera.Parameters parameters = this.camera.getParameters();
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         this.camera.setParameters(parameters);
+    }
+
+    public void releaseCamera()
+    {
+        if (null != this.camera)
+        {
+            this.camera.release();
+        }
     }
 }

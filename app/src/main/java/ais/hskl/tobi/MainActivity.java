@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Switch;
@@ -14,12 +13,9 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
 {
-    private static final String TOBI_NETWORK_KEY = "tobi";
     private static final int CAMERA_PERMISSION_CODE = 42;
     private BoundingBoxView boundingBoxView;
     private Switch showDebugInfo;
-
-    private TobiNetwork tobi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,10 +27,10 @@ public class MainActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_main);
 
-        this.tobi = new TobiNetwork(this);
+        TobiNetwork tobi = new TobiNetwork(this);
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
-        this.boundingBoxView.setTobiNetwork(this.tobi);
+        this.boundingBoxView.setTobiNetwork(tobi);
 
         this.showDebugInfo = findViewById(R.id.debug);
         this.showDebugInfo.setOnClickListener((v) ->
@@ -42,7 +38,7 @@ public class MainActivity extends AppCompatActivity
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
-        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
+        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
     }
 
@@ -58,6 +54,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause(){
         //Doing stuff when pausing the application before actually calling the super method... otherwise would be stupid
+        this.boundingBoxView.releaseCamera();
 
         super.onPause();
     }
