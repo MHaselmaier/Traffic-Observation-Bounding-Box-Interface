@@ -28,7 +28,7 @@ public class GpsHandler implements LocationListener {
         Log.i("GPS:", "Setting listener and starting gps");
         LocationManager locationManager =  (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
