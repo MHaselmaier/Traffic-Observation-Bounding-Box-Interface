@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity
     private Switch showDebugInfo;
     private static final String FILENAME = "dataFile";
     private static final String VAL_KEY = "key_detectionScore";
+    private static final String DEBUG_KEY = "key_debug";
 
     private TobiNetwork tobi;
 
@@ -55,6 +56,8 @@ public class MainActivity extends AppCompatActivity
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
         }
 
+        this.showDebugInfo.setChecked(getSharedPreferences(FILENAME, MODE_PRIVATE).getBoolean(DEBUG_KEY,false));
+        this.boundingBoxView.showDebugInfo(showDebugInfo.isChecked());
         this.tobi.setMinDetectionScore(getSharedPreferences(FILENAME, MODE_PRIVATE).getFloat(VAL_KEY, 0.7f));
         Button minDetectionScore = findViewById(R.id.min_detection_score);
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
@@ -65,6 +68,8 @@ public class MainActivity extends AppCompatActivity
         //Doing stuff when pausing the application before actually calling the super method... otherwise would be stupid
         SharedPreferences sharedPrefs = getSharedPreferences(FILENAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
+
+        editor.putBoolean(DEBUG_KEY,showDebugInfo.isChecked());
         editor.putFloat(VAL_KEY, this.tobi.getMinDetectionScore());
         editor.commit();
 
