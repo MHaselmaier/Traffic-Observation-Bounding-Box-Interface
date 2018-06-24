@@ -1,6 +1,5 @@
 package ais.hskl.tobi;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -21,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("deprecation")
@@ -89,11 +89,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         this.preview.setSurfaceTextureListener(this);
         this.boundingBox = findViewById(R.id.textureForeground);
         this.boundingBox.setOpaque(false);
-
-        if (this.preview.isAvailable())
-        {
-            setupPreview();
-        }
     }
 
     public void setTobiNetwork(TobiNetwork tobi)
@@ -115,12 +110,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface)
     {
-        if (null != this.camera)
-        {
-            this.camera.stopPreview();
-            this.camera.release();
-            return true;
-        }
         return false;
     }
 
@@ -147,11 +136,10 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                 {
                     //clear canvas before drawing the new boxes
                     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                    if (0 < objects.length)
-                    {
-                        drawBoundingBoxes(canvas, objects);
-                    }
+                    drawBoundingBoxes(canvas, objects);
                     drawSigns(canvas, objects);
+                    drawFPS(canvas, start);
+
                     this.boundingBox.unlockCanvasAndPost(canvas);
                 }
 
@@ -165,18 +153,17 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     public void setupPreview()
     {
-        setupCameraInstance();
-        if (null != this.camera)
+        if (null != this.preview && this.preview.isAvailable())
         {
-            try
-            {
-                this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
-                this.camera.startPreview();
-            }
-            catch (IOException ioe)
-            {
-                Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
-                Log.e(BoundingBoxView.class.getSimpleName(),ioe.toString());
+            setupCameraInstance();
+            if (null != this.camera) {
+                try {
+                    this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
+                    this.camera.startPreview();
+                } catch (IOException ioe) {
+                    Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+                    Log.e(BoundingBoxView.class.getSimpleName(), ioe.toString());
+                }
             }
         }
     }
@@ -235,6 +222,21 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                 this.signs[i].draw(canvas);
                 ++count;
             }
+        }
+    }
+
+    private void drawFPS(Canvas canvas, long start)
+    {
+        if (this.showDebugInfo)
+        {
+            Paint fontPaint = new Paint();
+            fontPaint.setColor(DETECTION_BOX_COLOR);
+            fontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            fontPaint.setStrokeWidth(1);
+            fontPaint.setTextSize(30);
+
+            float fps = 1_000_000_000f / (System.nanoTime() - start);
+            canvas.drawText(String.format(Locale.getDefault(), "%.1f FPS", fps), canvas.getWidth() - 105, 30, fontPaint);
         }
     }
 
@@ -307,5 +309,14 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         Camera.Parameters parameters = this.camera.getParameters();
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         this.camera.setParameters(parameters);
+    }
+
+    public void releaseCamera()
+    {
+        if (null != this.camera)
+        {
+            this.camera.stopPreview();
+            this.camera.release();
+        }
     }
 }
