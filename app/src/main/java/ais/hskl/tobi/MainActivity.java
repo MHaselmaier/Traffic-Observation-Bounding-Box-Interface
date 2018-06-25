@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     private Switch showDebugInfo;
     private Switch enableGps;
     private GpsHandler gpsHandler;
+    private TobiNetwork tobi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         setContentView(R.layout.activity_main);
 
         this.gpsHandler = new GpsHandler(this, this);
-        TobiNetwork tobi = new TobiNetwork(this);
+        this.tobi = new TobiNetwork(this);
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
         this.boundingBoxView.setTobiNetwork(tobi);
@@ -70,8 +71,8 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         });
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
-        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(tobi.getMinDetectionScore() * 100)));
-        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, tobi);
+        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+        MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
     }
 
