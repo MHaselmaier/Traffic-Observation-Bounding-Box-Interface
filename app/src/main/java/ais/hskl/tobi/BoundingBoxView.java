@@ -171,9 +171,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
                 }
 
                 this.isProcessing.set(false);
-
-                long end = System.nanoTime();
-                Log.d("ok", "Detected Objects in: " + (end - start) / 1_000_000_000f + "s");
             });
         }
     }

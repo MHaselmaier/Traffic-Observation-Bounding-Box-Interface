@@ -19,11 +19,10 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.Toast;
+import android.content.SharedPreferences;
 
-public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedChangedListener{
-    private static final String TOBI_NETWORK_KEY = "tobi";
-    private static final int CAMERA_PERMISSION_CODE = 42;
-    private static final int GPS_PERMISSION_CODE = 43;
+public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedChangedListener
+{
     private BoundingBoxView boundingBoxView;
     private Switch showDebugInfo;
     private Switch enableGps;
@@ -31,8 +30,10 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     private TobiNetwork tobi;
     private MediaPlayer speedLimitExceededSound;
 
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         this.speedLimitExceededSound =  MediaPlayer.create(this, R.raw.speed_limit_exceeded);
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         this.tobi = new TobiNetwork(this);
 
         this.boundingBoxView = findViewById(R.id.boundingBoxView);
-        this.boundingBoxView.setTobiNetwork(tobi);
+        this.boundingBoxView.setTobiNetwork(this.tobi);
 
         this.showDebugInfo = findViewById(R.id.debug);
         this.showDebugInfo.setOnClickListener((v) ->
@@ -93,12 +94,12 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         super.onResume();
 
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, Constants.CAMERA_PERMISSION_CODE);
         }
 
         if(ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, GPS_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, Constants.GPS_PERMISSION_CODE);
         }else
         {
             if(this.enableGps.isChecked()) //enabled in settings
@@ -106,6 +107,13 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
                 this.gpsHandler.start();
             }
         }
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
+        this.showDebugInfo.setChecked(sharedPreferences.getBoolean(Constants.SHOW_DEBUG, false));
+        this.boundingBoxView.showDebugInfo(showDebugInfo.isChecked());
+        this.tobi.setMinDetectionScore(sharedPreferences.getFloat(Constants.DETECTION_SCORE, 0.7f));
+        Button minDetectionScore = findViewById(R.id.min_detection_score);
+        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+
         this.boundingBoxView.setupPreview();
     }
 
@@ -113,27 +121,35 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     protected void onPause(){
         //Doing stuff when pausing the application before actually calling the super method... otherwise would be stupid
         this.gpsHandler.stop();
+        SharedPreferences sharedPrefs = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putBoolean(Constants.SHOW_DEBUG,showDebugInfo.isChecked());
+        editor.putFloat(Constants.DETECTION_SCORE, this.tobi.getMinDetectionScore());
+        editor.commit();
+
         this.boundingBoxView.releaseCamera();
 
         super.onPause();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
 
-        switch(requestCode){
-            case CAMERA_PERMISSION_CODE:
-                if(grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        switch (requestCode)
+        {
+            case Constants.CAMERA_PERMISSION_CODE:
+                if (grantResults != null || grantResults.length > 0 || grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
                     this.boundingBoxView.setupPreview();
-                }
-                else {
+                } else {
                     Toast.makeText(this, "Die App benötigt die Berechtigung auf Ihre Kamera zuzugreifen!", Toast.LENGTH_LONG).show();
                     finish();
                 }
                 break;
 
-            case GPS_PERMISSION_CODE:
-                if(grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            case Constants.GPS_PERMISSION_CODE:
+                if (grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
                     gpsHandler.start();
                 }
@@ -143,7 +159,6 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
                 break;
         }
     }
-
     @Override
     public void onSpeedChanged(int speed, double latitude, double longitude) {
 
