@@ -2,6 +2,12 @@ package ais.hskl.tobi;
 
 public interface Constants
 {
+    public static final int CAMERA_PERMISSION_CODE = 42;
+
+    public static final String TOBI_SHARED_PREFERENCES = "tobi";
+    public static final String DETECTION_SCORE = "detection_score";
+    public static final String SHOW_DEBUG = "show_debug";
+
     public static enum SIGNS
     {
         SPEED_LIMIT_30,
