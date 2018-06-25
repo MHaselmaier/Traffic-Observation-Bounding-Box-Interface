@@ -28,7 +28,7 @@ public class GpsHandler implements LocationListener {
         Log.i("GPS:", "Setting listener and starting gps");
         LocationManager locationManager =  (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
@@ -44,13 +44,15 @@ public class GpsHandler implements LocationListener {
 
         long currentStamp = System.currentTimeMillis();
         if(lastLat > 0 && lastLng > 0) {
-            String msg = String.format("Speed: %f", distanceByGeoInformation(lastLat, lastLng, location.getLatitude(), location.getLongitude(), this.lastTimestamp, currentStamp));
-            Toast.makeText(GpsHandler.this.context, msg, Toast.LENGTH_LONG).show();
+            int speed = (int) distanceByGeoInformation(lastLat, lastLng, location.getLatitude(), location.getLongitude(), this.lastTimestamp, currentStamp);
+            this.speedListener.onSpeedChanged(speed,lastLat, lastLng);
         }
 
         this.lastLat = location.getLatitude();
         this.lastLng = location.getLongitude();
         this.lastTimestamp = currentStamp;
+
+
     }
 
     @Override
@@ -79,6 +81,6 @@ public class GpsHandler implements LocationListener {
     }
 
     public interface SpeedChangedListener {
-        void onSpeedChanged(float speed, double latitude, double longitude);
+        void onSpeedChanged(int speed, double latitude, double longitude);
     }
 }

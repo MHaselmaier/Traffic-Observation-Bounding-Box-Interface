@@ -6,12 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Switch;
@@ -26,10 +29,14 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     private Switch enableGps;
     private GpsHandler gpsHandler;
     private TobiNetwork tobi;
+    private MediaPlayer speedLimitExceededSound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        this.speedLimitExceededSound =  MediaPlayer.create(this, R.raw.speed_limit_exceeded);
+        this.speedLimitExceededSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -74,6 +81,11 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
         MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
+    }
+
+    protected boolean isDebugModeEnabled()
+    {
+        return this.showDebugInfo.isChecked();
     }
 
     @Override
@@ -133,8 +145,52 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     }
 
     @Override
-    public void onSpeedChanged(float speed, double latitude, double longitude) {
+    public void onSpeedChanged(int speed, double latitude, double longitude) {
 
+        Constants.SIGNS lastSign = this.boundingBoxView.getLastSpeedSign();
+
+        if(lastSign != null)
+        {
+            switch(lastSign)
+            {
+                case SPEED_LIMIT_30:
+                    if(speed > 30)
+                        this.speedLimitExceededSound.start();
+                    break;
+
+                case SPEED_LIMIT_50:
+                    if(speed > 50)
+                        this.speedLimitExceededSound.start();
+                    break;
+
+                case SPEED_LIMIT_60:
+                    if(speed > 60)
+                        this.speedLimitExceededSound.start();
+                    break;
+
+                case SPEED_LIMIT_70:
+                    if(speed > 70)
+                        this.speedLimitExceededSound.start();
+                    break;
+
+                case SPEED_LIMIT_80:
+                    if(speed > 80)
+                        this.speedLimitExceededSound.start();
+                    break;
+
+                case SPEED_LIMIT_100:
+                    if(speed > 100)
+                        this.speedLimitExceededSound.start();
+                    break;
+
+                case SPEED_LIMIT_120:
+                    if(speed > 120)
+                        this.speedLimitExceededSound.start();
+                    break;
+            }
+        }
+
+        Log.i("MainActivity", "Called");
     }
 
     public static class RequestGpsEnable extends AlertDialog.Builder
