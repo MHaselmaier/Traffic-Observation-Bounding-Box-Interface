@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Tobi</string>
+
     <string name="debug">Show debug information</string>
-    <string name="min_detection_score_title">Choose the accuracy</string>
-    <string name="min_detection_score">Accuracy: %1$d%%</string>
+    <string name="min_detection_score_title">Choose the confidence:</string>
+    <string name="min_detection_score">Confidence: %1$d%%</string>
     <string name="cancel">Cancel</string>
     <string name="accept">Confirm</string>
     <string name="about">The \'Traffic Observation Bounding-Box Interface\' (Tobi) has been developed as part of the lecture \'Advanced Interactive Systems\' and focuses on assisting the driver by detecting traffic signs.</string>

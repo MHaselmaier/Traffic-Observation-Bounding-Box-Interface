@@ -39,7 +39,6 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:text="@string/accept"
-            android:textAppearance="@android:style/TextAppearance.Material.Small"
-            />
+            android:textAppearance="@android:style/TextAppearance.Material.Small" />
     </LinearLayout>
 </LinearLayout>

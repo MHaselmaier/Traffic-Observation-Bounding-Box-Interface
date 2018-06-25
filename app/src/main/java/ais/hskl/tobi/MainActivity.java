@@ -14,13 +14,8 @@ import android.content.SharedPreferences;
 
 public class MainActivity extends AppCompatActivity
 {
-    private static final String TOBI_NETWORK_KEY = "tobi";
-    private static final int CAMERA_PERMISSION_CODE = 42;
     private BoundingBoxView boundingBoxView;
     private Switch showDebugInfo;
-    private static final String FILENAME = "dataFile";
-    private static final String VAL_KEY = "key_detectionScore";
-    private static final String DEBUG_KEY = "key_debug";
 
     private TobiNetwork tobi;
 
@@ -53,12 +48,13 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
 
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, Constants.CAMERA_PERMISSION_CODE);
         }
 
-        this.showDebugInfo.setChecked(getSharedPreferences(FILENAME, MODE_PRIVATE).getBoolean(DEBUG_KEY,false));
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
+        this.showDebugInfo.setChecked(sharedPreferences.getBoolean(Constants.DETECTION_SCORE, false));
         this.boundingBoxView.showDebugInfo(showDebugInfo.isChecked());
-        this.tobi.setMinDetectionScore(getSharedPreferences(FILENAME, MODE_PRIVATE).getFloat(VAL_KEY, 0.7f));
+        this.tobi.setMinDetectionScore(sharedPreferences.getFloat(Constants.SHOW_DEBUG, 0.7f));
         Button minDetectionScore = findViewById(R.id.min_detection_score);
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
     }
@@ -66,11 +62,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause(){
         //Doing stuff when pausing the application before actually calling the super method... otherwise would be stupid
-        SharedPreferences sharedPrefs = getSharedPreferences(FILENAME, MODE_PRIVATE);
+        SharedPreferences sharedPrefs = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-
-        editor.putBoolean(DEBUG_KEY,showDebugInfo.isChecked());
-        editor.putFloat(VAL_KEY, this.tobi.getMinDetectionScore());
+        editor.putBoolean(Constants.SHOW_DEBUG,showDebugInfo.isChecked());
+        editor.putFloat(Constants.DETECTION_SCORE, this.tobi.getMinDetectionScore());
         editor.commit();
 
         super.onPause();
@@ -80,7 +75,7 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
 
         switch(requestCode){
-            case CAMERA_PERMISSION_CODE:
+            case Constants.CAMERA_PERMISSION_CODE:
                 if(grantResults != null || grantResults.length > 0 || grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     this.boundingBoxView.setupPreview();
                 }
