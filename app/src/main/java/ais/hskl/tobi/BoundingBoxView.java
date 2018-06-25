@@ -220,7 +220,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         for(TobiNetwork.DetectedObject detectedObject : detectedObjects)
         {
             Constants.SIGNS objectSign = detectedObject.getDetectedClass();
-            if(objectSign == Constants.SIGNS.MAJOR_ROAD || objectSign == Constants.SIGNS.GIVE_WAY)
+            if(objectSign == Constants.SIGNS.MAJOR_ROAD || objectSign == Constants.SIGNS.RIGHT_OF_WAY)
                 return true;
         }
 
