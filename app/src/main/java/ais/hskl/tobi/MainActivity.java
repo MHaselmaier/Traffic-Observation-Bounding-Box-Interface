@@ -16,7 +16,6 @@ public class MainActivity extends AppCompatActivity
 {
     private BoundingBoxView boundingBoxView;
     private Switch showDebugInfo;
-
     private TobiNetwork tobi;
 
     @Override
@@ -52,11 +51,13 @@ public class MainActivity extends AppCompatActivity
         }
 
         SharedPreferences sharedPreferences = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
-        this.showDebugInfo.setChecked(sharedPreferences.getBoolean(Constants.DETECTION_SCORE, false));
+        this.showDebugInfo.setChecked(sharedPreferences.getBoolean(Constants.SHOW_DEBUG, false));
         this.boundingBoxView.showDebugInfo(showDebugInfo.isChecked());
-        this.tobi.setMinDetectionScore(sharedPreferences.getFloat(Constants.SHOW_DEBUG, 0.7f));
+        this.tobi.setMinDetectionScore(sharedPreferences.getFloat(Constants.DETECTION_SCORE, 0.7f));
         Button minDetectionScore = findViewById(R.id.min_detection_score);
         minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+
+        this.boundingBoxView.setupPreview();
     }
 
     @Override
@@ -67,6 +68,8 @@ public class MainActivity extends AppCompatActivity
         editor.putBoolean(Constants.SHOW_DEBUG,showDebugInfo.isChecked());
         editor.putFloat(Constants.DETECTION_SCORE, this.tobi.getMinDetectionScore());
         editor.commit();
+
+        this.boundingBoxView.releaseCamera();
 
         super.onPause();
     }
