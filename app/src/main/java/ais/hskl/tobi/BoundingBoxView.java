@@ -47,6 +47,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     private volatile Constants.SIGNS lastSpeedSign = null;
     private MediaPlayer dangerSignSound;
+    private MediaPlayer majorRoadSignSound;
 
 
     private static final int BATCH_SIZE = 1;
@@ -70,6 +71,9 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         this.context = context;
         this.dangerSignSound = MediaPlayer.create(context, R.raw.danger_sound);
         this.dangerSignSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+        this.majorRoadSignSound = MediaPlayer.create(context, R.raw.major_road_sound);
+        this.majorRoadSignSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         loadSigns();
     }
@@ -147,8 +151,12 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
                 this.lastSpeedSign = findSpeedSignInPredictionResult(objects, this.lastSpeedSign);
 
-                if(findDangerSignInPredictionResult(objects) && ((MainActivity) context).isDebugModeEnabled())
-                    this.dangerSignSound.start();
+                if(((MainActivity) context).isDebugModeEnabled()) {
+                    if (findDangerSignInPredictionResult(objects))
+                        this.dangerSignSound.start();
+                    else if (findMajorRoadSignInPredictionResult(objects))
+                        this.majorRoadSignSound.start();
+                }
 
                 Canvas canvas = this.boundingBox.lockCanvas();
                 if (null != canvas)
@@ -201,6 +209,18 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         {
             Constants.SIGNS objectSign = detectedObject.getDetectedClass();
             if(objectSign == Constants.SIGNS.DANGER)
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean findMajorRoadSignInPredictionResult(TobiNetwork.DetectedObject[] detectedObjects)
+    {
+        for(TobiNetwork.DetectedObject detectedObject : detectedObjects)
+        {
+            Constants.SIGNS objectSign = detectedObject.getDetectedClass();
+            if(objectSign == Constants.SIGNS.MAJOR_ROAD || objectSign == Constants.SIGNS.GIVE_WAY)
                 return true;
         }
 
