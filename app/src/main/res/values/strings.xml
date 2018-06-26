@@ -6,6 +6,8 @@
     <string name="debug">Debug-Informationen anzeigen</string>
     <string name="min_detection_score_title">Wählen Sie die Genauigkeit:</string>
     <string name="min_detection_score">Genauigkeit: %1$d%%</string>
+    <string name="enable_gps">Geschwindigkeitswarnung</string>
+    <string name="enable_gps_dialog_message">Zum Nutzen der Geschwindigkeitswarnung wird für das Ermitteln der Geschwindigkeit der eingeschaltete Standort benötigt.</string>
     <string name="cancel">Abbrechen</string>
     <string name="accept">Annehmen</string>
 
