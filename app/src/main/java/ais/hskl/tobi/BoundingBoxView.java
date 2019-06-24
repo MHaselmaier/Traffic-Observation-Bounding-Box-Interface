@@ -23,7 +23,6 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("deprecation")
@@ -139,7 +138,8 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface)
     {
-        if(this.isProcessing.compareAndSet(false, true)) {
+        if (this.isProcessing.compareAndSet(false, true))
+        {
             AsyncTask.execute(() ->
             {
                 long start = System.nanoTime();
@@ -149,9 +149,10 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
                 TobiNetwork.DetectedObject[] objects = this.tobi.predict(image, bitmap.getWidth(), bitmap.getHeight());
 
-                this.lastSpeedSign = findSpeedSignInPredictionResult(objects, this.lastSpeedSign);
+                updateLastSpeedSign(objects);
 
-                if(((MainActivity) context).isDebugModeEnabled()) {
+                if (((MainActivity)this.context).isDebugModeEnabled())
+                {
                     if (findDangerSignInPredictionResult(objects))
                         this.dangerSignSound.start();
                     else if (findMajorRoadSignInPredictionResult(objects))
@@ -175,37 +176,67 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         }
     }
 
-    private Constants.SIGNS findSpeedSignInPredictionResult(TobiNetwork.DetectedObject[] detectedObjects, Constants.SIGNS lastSpeedSign)
+    private void updateLastSpeedSign(TobiNetwork.DetectedObject[] detectedObjects)
     {
-        for(TobiNetwork.DetectedObject detectedObject : detectedObjects){
+        Constants.SIGNS sign = null;
+        int lowestSpeedLimit = Integer.MAX_VALUE;
+        for (TobiNetwork.DetectedObject detectedObject: detectedObjects)
+        {
             Constants.SIGNS objectSign = detectedObject.getDetectedClass();
 
-            switch(objectSign)
+            switch (objectSign)
             {
-                case SPEED_LIMIT_30:
-                case SPEED_LIMIT_50:
-                case SPEED_LIMIT_60:
-                case SPEED_LIMIT_70:
-                case SPEED_LIMIT_80:
-                case SPEED_LIMIT_100:
-                case SPEED_LIMIT_120:
-                    return objectSign;
-
-                case END_SPEED_LIMIT_80:
-                case END_RESTRICTION_ALL:
-                    return objectSign;
+            case SPEED_LIMIT_30:
+                lowestSpeedLimit = Math.min(lowestSpeedLimit, 30);
+                sign = Constants.SIGNS.SPEED_LIMIT_30;
+                break;
+            case SPEED_LIMIT_50:
+                lowestSpeedLimit = Math.min(lowestSpeedLimit, 50);
+                if (50 == lowestSpeedLimit)
+                    sign = Constants.SIGNS.SPEED_LIMIT_50;
+                break;
+            case SPEED_LIMIT_60:
+                lowestSpeedLimit = Math.min(lowestSpeedLimit, 60);
+                if (60 == lowestSpeedLimit)
+                    sign = Constants.SIGNS.SPEED_LIMIT_60;
+                break;
+            case SPEED_LIMIT_70:
+                lowestSpeedLimit = Math.min(lowestSpeedLimit, 70);
+                if (70 == lowestSpeedLimit)
+                    sign = Constants.SIGNS.SPEED_LIMIT_70;
+                break;
+            case SPEED_LIMIT_80:
+                lowestSpeedLimit = Math.min(lowestSpeedLimit, 80);
+                if (80 == lowestSpeedLimit)
+                    sign = Constants.SIGNS.SPEED_LIMIT_80;
+                break;
+            case SPEED_LIMIT_100:
+                lowestSpeedLimit = Math.min(lowestSpeedLimit, 100);
+                if (100 == lowestSpeedLimit)
+                    sign = Constants.SIGNS.SPEED_LIMIT_100;
+                break;
+            case SPEED_LIMIT_120:
+                lowestSpeedLimit = Math.min(lowestSpeedLimit, 120);
+                if (120 == lowestSpeedLimit)
+                    sign = Constants.SIGNS.SPEED_LIMIT_120;
+                break;
+            case END_SPEED_LIMIT_80:
+            case END_RESTRICTION_ALL:
+                // Prioritize end of restrictions
+                this.lastSpeedSign = objectSign;
+                return;
             }
         }
 
-        return lastSpeedSign;
+        this.lastSpeedSign = sign;
     }
 
     private boolean findDangerSignInPredictionResult(TobiNetwork.DetectedObject[] detectedObjects)
     {
-        for(TobiNetwork.DetectedObject detectedObject : detectedObjects)
+        for(TobiNetwork.DetectedObject detectedObject: detectedObjects)
         {
             Constants.SIGNS objectSign = detectedObject.getDetectedClass();
-            if(objectSign == Constants.SIGNS.DANGER)
+            if (objectSign == Constants.SIGNS.DANGER)
                 return true;
         }
 
@@ -214,7 +245,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     private boolean findMajorRoadSignInPredictionResult(TobiNetwork.DetectedObject[] detectedObjects)
     {
-        for(TobiNetwork.DetectedObject detectedObject : detectedObjects)
+        for(TobiNetwork.DetectedObject detectedObject: detectedObjects)
         {
             Constants.SIGNS objectSign = detectedObject.getDetectedClass();
             if(objectSign == Constants.SIGNS.MAJOR_ROAD || objectSign == Constants.SIGNS.RIGHT_OF_WAY)
@@ -226,18 +257,20 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     public void setupPreview()
     {
-        if (null != this.preview && this.preview.isAvailable())
+        if (null == this.preview || !this.preview.isAvailable()) return;
+
+        setupCameraInstance();
+        if (null == this.camera) return;
+
+        try
         {
-            setupCameraInstance();
-            if (null != this.camera) {
-                try {
-                    this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
-                    this.camera.startPreview();
-                } catch (IOException ioe) {
-                    Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
-                    Log.e(BoundingBoxView.class.getSimpleName(), ioe.toString());
-                }
-            }
+            this.camera.setPreviewTexture(this.preview.getSurfaceTexture());
+            this.camera.startPreview();
+        }
+        catch (IOException ioe)
+        {
+            Toast.makeText(this.context, "Es trat ein Fehler beim erstellen der Preview auf!", Toast.LENGTH_LONG).show();
+            Log.e(BoundingBoxView.class.getSimpleName(), ioe.toString());
         }
     }
 
@@ -270,7 +303,7 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         fontPaint.setStrokeWidth(1);
         fontPaint.setTextSize(30);
 
-        for (TobiNetwork.DetectedObject object : detectedObjects)
+        for (TobiNetwork.DetectedObject object: detectedObjects)
         {
             float[] rect = object.getBox();
             canvas.drawRect(rect[LEFT] * canvas.getWidth(), rect[TOP] * canvas.getHeight(), rect[RIGHT] * canvas.getWidth(), rect[BOTTOM] * canvas.getHeight(), boxPaint);
@@ -300,17 +333,16 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     private void drawFPS(Canvas canvas, long start)
     {
-        if (this.showDebugInfo)
-        {
-            Paint fontPaint = new Paint();
-            fontPaint.setColor(DETECTION_BOX_COLOR);
-            fontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            fontPaint.setStrokeWidth(1);
-            fontPaint.setTextSize(30);
+        if (!this.showDebugInfo) return;
 
-            float fps = 1_000_000_000f / (System.nanoTime() - start);
-            canvas.drawText(String.format(Locale.getDefault(), "%.1f FPS", fps), canvas.getWidth() - 105, 30, fontPaint);
-        }
+        Paint fontPaint = new Paint();
+        fontPaint.setColor(DETECTION_BOX_COLOR);
+        fontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        fontPaint.setStrokeWidth(1);
+        fontPaint.setTextSize(30);
+
+        float fps = 1_000_000_000f / (System.nanoTime() - start);
+        canvas.drawText(String.format(Locale.getDefault(), "%.1f FPS", fps), canvas.getWidth() - 105, 30, fontPaint);
     }
 
     private void updateSignsTiming(TobiNetwork.DetectedObject[] detectedObjects)
@@ -355,22 +387,25 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     private void setupCameraOrientation()
     {
         WindowManager windowManager = (WindowManager)this.context.getSystemService(Context.WINDOW_SERVICE);
+        if (null == windowManager) return;
+
         int rotation = windowManager.getDefaultDisplay().getRotation();
-        int degrees = 0;
+        int degrees;
         switch (rotation)
         {
-            case Surface.ROTATION_0:
-                degrees = 0;
-                break;
-            case Surface.ROTATION_90:
-                degrees = 90;
-                break;
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
+        default:
+        case Surface.ROTATION_0:
+            degrees = 0;
+            break;
+        case Surface.ROTATION_90:
+            degrees = 90;
+            break;
+        case Surface.ROTATION_180:
+            degrees = 180;
+            break;
+        case Surface.ROTATION_270:
+            degrees = 270;
+            break;
         }
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(this.cameraID, info);
@@ -386,10 +421,9 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
     public void releaseCamera()
     {
-        if (null != this.camera)
-        {
-            this.camera.stopPreview();
-            this.camera.release();
-        }
+        if (null == this.camera) return;
+
+        this.camera.stopPreview();
+        this.camera.release();
     }
 }

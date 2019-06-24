@@ -23,6 +23,8 @@ public class TobiNetwork implements Serializable
     private static final long INPUT_SHAPE_COLOR_CHANNELS = 3;
     private static final long INPUT_SHAPE_NUMBER_OF_IMAGES = 1;
 
+    private static final int MAX_DETECTIONS = 100;
+
     private TensorFlowInferenceInterface inferenceInterface;
     private float minDetectionScore = 0.0f;
 
@@ -49,21 +51,18 @@ public class TobiNetwork implements Serializable
         float[] num_detections = new float[1];
         this.inferenceInterface.fetch(OUTPUT_NODES[0], num_detections);
 
-        if (0 < num_detections[0])
-        {
-            float[] detection_boxes = new float[400];
-            this.inferenceInterface.fetch(OUTPUT_NODES[1], detection_boxes);
+        if (0 == num_detections[0]) return new DetectedObject[0];
 
-            float[] detection_scores = new float[100];
-            this.inferenceInterface.fetch(OUTPUT_NODES[2], detection_scores);
+        float[] detection_boxes = new float[4 * MAX_DETECTIONS];
+        this.inferenceInterface.fetch(OUTPUT_NODES[1], detection_boxes);
 
-            float[] detection_classes = new float[100];
-            this.inferenceInterface.fetch(OUTPUT_NODES[3], detection_classes);
+        float[] detection_scores = new float[MAX_DETECTIONS];
+        this.inferenceInterface.fetch(OUTPUT_NODES[2], detection_scores);
 
-            return generateDetectedObjects(detection_boxes, detection_scores, detection_classes);
-        }
+        float[] detection_classes = new float[MAX_DETECTIONS];
+        this.inferenceInterface.fetch(OUTPUT_NODES[3], detection_classes);
 
-        return new DetectedObject[0];
+        return generateDetectedObjects(detection_boxes, detection_scores, detection_classes);
     }
 
     private DetectedObject[] generateDetectedObjects(float[] detection_boxes, float[] detection_scores, float[] detection_classes)
@@ -71,17 +70,16 @@ public class TobiNetwork implements Serializable
         List<DetectedObject> detectedObjects = new ArrayList<>();
         for (int i = 0; detection_scores.length > i; ++i)
         {
-            if (this.minDetectionScore <= detection_scores[i])
-            {
-                float[] box = Arrays.copyOfRange(detection_boxes, i * 4, i * 4 + 4);
-                if (1e-5 > Math.abs(box[0] - box[2]) || 1e-5 > Math.abs(box[1] - box[3]))
-                {
-                    // Ignoring boxes that are too small -> some kind of error
-                    continue;
-                }
+            if (this.minDetectionScore > detection_scores[i]) continue;
 
-                detectedObjects.add(new DetectedObject(box, detection_scores[i], (int)detection_classes[i]-1));
+            float[] box = Arrays.copyOfRange(detection_boxes, i * 4, i * 4 + 4);
+            if (1e-5 > Math.abs(box[0] - box[2]) || 1e-5 > Math.abs(box[1] - box[3]))
+            {
+                // Ignoring boxes that are too small -> some kind of error
+                continue;
             }
+
+            detectedObjects.add(new DetectedObject(box, detection_scores[i], (int)detection_classes[i]-1));
         }
         return detectedObjects.toArray(new DetectedObject[0]);
     }

@@ -48,7 +48,7 @@ public class MinDetectionScoreDialog extends Dialog
 
     private void handleAccept()
     {
-        this.minDetectionScoreButton.setText(this.context.getResources().getString(R.string.min_detection_score, this.picker.getValue()));
+        this.minDetectionScoreButton.setText(this.context.getString(R.string.min_detection_score, this.picker.getValue()));
         this.tobi.setMinDetectionScore(this.picker.getValue() / 100f);
         dismiss();
     }
