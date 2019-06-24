@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ais.hskl.tobi">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="de.mhaselmaier.tobi">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -14,7 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity android:name="MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

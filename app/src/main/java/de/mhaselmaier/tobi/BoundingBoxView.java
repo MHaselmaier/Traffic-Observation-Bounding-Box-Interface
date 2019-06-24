@@ -1,4 +1,4 @@
-package ais.hskl.tobi;
+package de.mhaselmaier.tobi;
 
 import android.content.Context;
 import android.graphics.Bitmap;

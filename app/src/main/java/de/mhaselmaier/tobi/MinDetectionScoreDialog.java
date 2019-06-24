@@ -1,4 +1,4 @@
-package ais.hskl.tobi;
+package de.mhaselmaier.tobi;
 
 import android.app.Dialog;
 import android.content.Context;

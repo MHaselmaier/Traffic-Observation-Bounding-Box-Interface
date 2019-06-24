@@ -1,16 +1,16 @@
-package ais.hskl.tobi;
+package de.mhaselmaier.tobi;
 
-public interface Constants
+abstract class Constants
 {
-    public static final int CAMERA_PERMISSION_CODE = 42;
-    public static final int GPS_PERMISSION_CODE = 43;
+    static final int CAMERA_PERMISSION_CODE = 42;
+    static final int GPS_PERMISSION_CODE = 43;
 
-    public static final String TOBI_SHARED_PREFERENCES = "tobi";
-    public static final String DETECTION_SCORE = "detection_score";
-    public static final String SHOW_DEBUG = "show_debug";
-    public static final String ENABLE_GPS = "enable_gps";
+    static final String TOBI_SHARED_PREFERENCES = "tobi";
+    static final String DETECTION_SCORE = "detection_score";
+    static final String SHOW_DEBUG = "show_debug";
+    static final String ENABLE_GPS = "enable_gps";
 
-    public static enum SIGNS
+    enum SIGNS
     {
         SPEED_LIMIT_30,
         SPEED_LIMIT_50,
