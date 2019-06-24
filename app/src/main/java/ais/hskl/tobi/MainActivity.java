@@ -92,6 +92,16 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     {
         super.onResume();
 
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
+        this.showDebugInfo.setChecked(sharedPreferences.getBoolean(Constants.SHOW_DEBUG, false));
+        this.boundingBoxView.showDebugInfo(this.showDebugInfo.isChecked());
+        this.enableGps.setChecked(sharedPreferences.getBoolean(Constants.ENABLE_GPS, false));
+        this.tobi.setMinDetectionScore(sharedPreferences.getFloat(Constants.DETECTION_SCORE, 0.7f));
+        Button minDetectionScore = findViewById(R.id.min_detection_score);
+        minDetectionScore.setText(getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+
+        this.boundingBoxView.setupPreview();
+
         if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA))
         {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, Constants.CAMERA_PERMISSION_CODE);
@@ -106,15 +116,6 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         {
             this.gpsHandler.start();
         }
-
-        SharedPreferences sharedPreferences = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
-        this.showDebugInfo.setChecked(sharedPreferences.getBoolean(Constants.SHOW_DEBUG, false));
-        this.boundingBoxView.showDebugInfo(showDebugInfo.isChecked());
-        this.tobi.setMinDetectionScore(sharedPreferences.getFloat(Constants.DETECTION_SCORE, 0.7f));
-        Button minDetectionScore = findViewById(R.id.min_detection_score);
-        minDetectionScore.setText(getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
-
-        this.boundingBoxView.setupPreview();
     }
 
     @Override
@@ -123,7 +124,8 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         this.gpsHandler.stop();
         SharedPreferences sharedPrefs = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putBoolean(Constants.SHOW_DEBUG,showDebugInfo.isChecked());
+        editor.putBoolean(Constants.SHOW_DEBUG, this.showDebugInfo.isChecked());
+        editor.putBoolean(Constants.ENABLE_GPS, this.enableGps.isChecked());
         editor.putFloat(Constants.DETECTION_SCORE, this.tobi.getMinDetectionScore());
         editor.apply();
 

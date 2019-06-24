@@ -8,6 +8,7 @@ public interface Constants
     public static final String TOBI_SHARED_PREFERENCES = "tobi";
     public static final String DETECTION_SCORE = "detection_score";
     public static final String SHOW_DEBUG = "show_debug";
+    public static final String ENABLE_GPS = "enable_gps";
 
     public static enum SIGNS
     {
