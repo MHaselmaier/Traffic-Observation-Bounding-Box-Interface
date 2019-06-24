@@ -1,6 +1,5 @@
 package ais.hskl.tobi;
 
-
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Switch;
@@ -36,11 +34,11 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     {
         super.onCreate(savedInstanceState);
 
-        this.speedLimitExceededSound =  MediaPlayer.create(this, R.raw.speed_limit_exceeded);
+        this.speedLimitExceededSound = MediaPlayer.create(this, R.raw.speed_limit_exceeded);
         this.speedLimitExceededSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
@@ -53,16 +51,16 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
 
         this.showDebugInfo = findViewById(R.id.debug);
         this.showDebugInfo.setOnClickListener((v) ->
-                MainActivity.this.boundingBoxView.showDebugInfo(MainActivity.this.showDebugInfo.isChecked()));
+                this.boundingBoxView.showDebugInfo(this.showDebugInfo.isChecked()));
 
         this.enableGps = findViewById(R.id.enable_gps);
         this.enableGps.setOnClickListener((v) ->
         {
-            if(this.enableGps.isChecked())
+            if (this.enableGps.isChecked())
             {
-                final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                LocationManager manager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
-                if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                if (null != manager && manager.isProviderEnabled(LocationManager.GPS_PROVIDER))
                 {
                     this.gpsHandler.start();
                 }
@@ -79,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
         });
 
         Button minDetectionScore = findViewById(R.id.min_detection_score);
-        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+        minDetectionScore.setText(getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
         MinDetectionScoreDialog minDetectionScoreDialog = new MinDetectionScoreDialog(this, minDetectionScore, this.tobi);
         minDetectionScore.setOnClickListener((v) -> minDetectionScoreDialog.show());
     }
@@ -90,42 +88,44 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume()
+    {
         super.onResume();
 
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+        if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA))
+        {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, Constants.CAMERA_PERMISSION_CODE);
         }
 
-        if(ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, Constants.GPS_PERMISSION_CODE);
-        }else
+        if (PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) ||
+                PackageManager.PERMISSION_GRANTED != ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION))
         {
-            if(this.enableGps.isChecked()) //enabled in settings
-            {
-                this.gpsHandler.start();
-            }
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, Constants.GPS_PERMISSION_CODE);
         }
+        else if (this.enableGps.isChecked()) //enabled in settings
+        {
+            this.gpsHandler.start();
+        }
+
         SharedPreferences sharedPreferences = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
         this.showDebugInfo.setChecked(sharedPreferences.getBoolean(Constants.SHOW_DEBUG, false));
         this.boundingBoxView.showDebugInfo(showDebugInfo.isChecked());
         this.tobi.setMinDetectionScore(sharedPreferences.getFloat(Constants.DETECTION_SCORE, 0.7f));
         Button minDetectionScore = findViewById(R.id.min_detection_score);
-        minDetectionScore.setText(getResources().getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
+        minDetectionScore.setText(getString(R.string.min_detection_score, (int)(this.tobi.getMinDetectionScore() * 100)));
 
         this.boundingBoxView.setupPreview();
     }
 
     @Override
-    protected void onPause(){
-        //Doing stuff when pausing the application before actually calling the super method... otherwise would be stupid
+    protected void onPause()
+    {
         this.gpsHandler.stop();
         SharedPreferences sharedPrefs = getSharedPreferences(Constants.TOBI_SHARED_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean(Constants.SHOW_DEBUG,showDebugInfo.isChecked());
         editor.putFloat(Constants.DETECTION_SCORE, this.tobi.getMinDetectionScore());
-        editor.commit();
+        editor.apply();
 
         this.boundingBoxView.releaseCamera();
 
@@ -133,109 +133,89 @@ public class MainActivity extends AppCompatActivity implements GpsHandler.SpeedC
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
-
         switch (requestCode)
         {
-            case Constants.CAMERA_PERMISSION_CODE:
-                if (grantResults != null || grantResults.length > 0 || grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    this.boundingBoxView.setupPreview();
-                } else {
-                    Toast.makeText(this, "Die App benötigt die Berechtigung auf Ihre Kamera zuzugreifen!", Toast.LENGTH_LONG).show();
-                    finish();
-                }
-                break;
-
-            case Constants.GPS_PERMISSION_CODE:
-                if (grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    gpsHandler.start();
-                }
-
-            default:
-                //Another one bites the dust
-                break;
-        }
-    }
-    @Override
-    public void onSpeedChanged(int speed, double latitude, double longitude) {
-
-        Constants.SIGNS lastSign = this.boundingBoxView.getLastSpeedSign();
-
-        if(lastSign != null)
-        {
-            switch(lastSign)
+        case Constants.CAMERA_PERMISSION_CODE:
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                case SPEED_LIMIT_30:
-                    if(speed > 30)
-                        this.speedLimitExceededSound.start();
-                    break;
-
-                case SPEED_LIMIT_50:
-                    if(speed > 50)
-                        this.speedLimitExceededSound.start();
-                    break;
-
-                case SPEED_LIMIT_60:
-                    if(speed > 60)
-                        this.speedLimitExceededSound.start();
-                    break;
-
-                case SPEED_LIMIT_70:
-                    if(speed > 70)
-                        this.speedLimitExceededSound.start();
-                    break;
-
-                case SPEED_LIMIT_80:
-                    if(speed > 80)
-                        this.speedLimitExceededSound.start();
-                    break;
-
-                case SPEED_LIMIT_100:
-                    if(speed > 100)
-                        this.speedLimitExceededSound.start();
-                    break;
-
-                case SPEED_LIMIT_120:
-                    if(speed > 120)
-                        this.speedLimitExceededSound.start();
-                    break;
+                this.boundingBoxView.setupPreview();
             }
+            else
+            {
+                Toast.makeText(this, "Die App benötigt die Berechtigung auf Ihre Kamera zuzugreifen!", Toast.LENGTH_LONG).show();
+                finish();
+            }
+            break;
+        case Constants.GPS_PERMISSION_CODE:
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                gpsHandler.start();
+            }
+            break;
+        default:
+            //Another one bites the dust
+            break;
+        }
+    }
+    
+    @Override
+    public void onSpeedChanged(int speed, double latitude, double longitude)
+    {
+        Constants.SIGNS lastSign = this.boundingBoxView.getLastSpeedSign();
+        if (null == lastSign) return;
+
+        int maxSpeed;
+        switch (lastSign)
+        {
+        case SPEED_LIMIT_30:
+            maxSpeed = 30;
+            break;
+        case SPEED_LIMIT_50:
+            maxSpeed = 50;
+            break;
+        case SPEED_LIMIT_60:
+            maxSpeed = 60;
+            break;
+        case SPEED_LIMIT_70:
+            maxSpeed = 70;
+            break;
+        case SPEED_LIMIT_80:
+            maxSpeed = 80;
+            break;
+        case SPEED_LIMIT_100:
+            maxSpeed = 100;
+            break;
+        case SPEED_LIMIT_120:
+            maxSpeed = 120;
+            break;
+        default:
+            maxSpeed = Integer.MAX_VALUE;
+            break;
         }
 
-        Log.i("MainActivity", "Called");
+        if (maxSpeed < speed)
+            this.speedLimitExceededSound.start();
     }
 
-    public static class RequestGpsEnable extends AlertDialog.Builder
+    private static class RequestGpsEnable extends AlertDialog.Builder
     {
-
-        public RequestGpsEnable(@NonNull  Context context, GpsHandler gpsHandler, Switch enableGps) {
+        private RequestGpsEnable(@NonNull  Context context, GpsHandler gpsHandler, Switch enableGps)
+        {
             super(context);
 
-            super.setMessage(getContext().getResources().getString(R.string.enable_gps_dialog_message));
-            super.setPositiveButton(getContext().getResources().getString(R.string.accept), (v,w) ->
+            super.setMessage(context.getString(R.string.enable_gps_dialog_message));
+            super.setPositiveButton(context.getString(R.string.accept), (v,w) ->
             {
                 Intent settings = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                getContext().startActivity(settings);
+                context.startActivity(settings);
             });
-
-            super.setNegativeButton(getContext().getResources().getString(R.string.cancel), (v,w) ->
+            super.setNegativeButton(context.getString(R.string.cancel), (v,w) ->
             {
                 gpsHandler.stop();
                 enableGps.setChecked(false);
             });
-
-
         }
-
-
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState)
-    {
-        super.onSaveInstanceState(savedInstanceState);
     }
 }
