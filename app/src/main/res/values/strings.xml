@@ -4,8 +4,8 @@
 
     <string name="about">Das \"Traffic Observation Bounding-(B)ox Interface\" (Tobi) ist eine im Rahmen der Veranstalltung Advanced Interactive Systems entstandene Anwendung, welche den Fahrer beim Erkennen von Straßendschildern unterstützt.</string>
     <string name="debug">Debug-Informationen anzeigen</string>
-    <string name="min_detection_score_title">Wählen Sie die Genauigkeit:</string>
-    <string name="min_detection_score">Genauigkeit: %1$d%%</string>
+    <string name="min_detection_score_title">Wählen Sie das Konfidenzniveau:</string>
+    <string name="min_detection_score">Konfidenzniveau: %1$d%%</string>
     <string name="enable_gps">Geschwindigkeitswarnung</string>
     <string name="enable_gps_dialog_message">Zum Nutzen der Geschwindigkeitswarnung wird für das Ermitteln der Geschwindigkeit der eingeschaltete Standort benötigt.</string>
     <string name="cancel">Abbrechen</string>
