@@ -2,14 +2,14 @@
 <resources>
     <string name="app_name">Tobi</string>
 
-    <string name="about">Das \"Traffic Observation Bounding-(B)ox Interface\" (Tobi) ist eine im Rahmen der Veranstalltung Advanced Interactive Systems entstandene Anwendung, welche den Fahrer beim Erkennen von Straßendschildern unterstützt.</string>
-    <string name="debug">Debug-Informationen anzeigen</string>
-    <string name="min_detection_score_title">Wählen Sie das Konfidenzniveau:</string>
-    <string name="min_detection_score">Konfidenzniveau: %1$d%%</string>
-    <string name="enable_gps">Geschwindigkeitswarnung</string>
-    <string name="enable_gps_dialog_message">Zum Nutzen der Geschwindigkeitswarnung wird für das Ermitteln der Geschwindigkeit der eingeschaltete Standort benötigt.</string>
-    <string name="cancel">Abbrechen</string>
-    <string name="accept">Annehmen</string>
+    <string name="about">The \'Traffic Observation Bounding-Box Interface\' (Tobi) has been developed as part of the lecture \'Advanced Interactive Systems\' and focuses on assisting the driver by detecting traffic signs.</string>
+    <string name="debug">Show debug information</string>
+    <string name="min_detection_score_title">Choose the confidence:</string>
+    <string name="min_detection_score">Confidence: %1$d%%</string>
+    <string name="enable_gps">Speed Warning</string>
+    <string name="enable_gps_dialog_message">To use the Speed Warning Feature the Location Service has to be enabled.</string>
+    <string name="cancel">Cancel</string>
+    <string name="accept">Confirm</string>
 
     <string-array name="detection_classes">
         <item>30 km/h</item>
@@ -17,42 +17,42 @@
         <item>60 km/h</item>
         <item>70 km/h</item>
         <item>80 km/h</item>
-        <item>Ende 80 km/h</item>
+        <item>End of 80 km/h limit</item>
         <item>100 km/h</item>
         <item>120 km/h</item>
-        <item>Überholverbot</item>
-        <item>Überholverbot (LKW)</item>
-        <item>Vorfahrt</item>
-        <item>Vorfahrtsstraße</item>
-        <item>Vorfahrt gewähren</item>
-        <item>Stopp</item>
-        <item>Verbot (Alle)</item>
-        <item>Verbot (LKW)</item>
-        <item>Verbot (Einfahrt)</item>
-        <item>Gefahr</item>
-        <item>Kurve (Links)</item>
-        <item>Kurve (Rechts)</item>
-        <item>Doppelkurve</item>
-        <item>Unebene Fahrbahn</item>
-        <item>Schleudergefahr</item>
-        <item>Verengte Fahrbahn</item>
-        <item>Baustelle</item>
-        <item>Ampel</item>
-        <item>Fussgänger</item>
-        <item>Kinder</item>
-        <item>Fahrrad</item>
-        <item>Schnee-/Eisglätte</item>
-        <item>Tiere</item>
-        <item>Ende Verbote</item>
-        <item>Rechts</item>
-        <item>Links</item>
-        <item>Gerade aus</item>
-        <item>Rechts / Gerade aus</item>
-        <item>Links / Gerade aus</item>
-        <item>Rechts vorbei</item>
-        <item>Links vorbei</item>
-        <item>Kreisverkehr</item>
-        <item>Ende Überholverbot</item>
-        <item>Ende Überholverbot (LKW)</item>
+        <item>No overtaking</item>
+        <item>No overtaking (trucks)</item>
+        <item>Right of way</item>
+        <item>Major road</item>
+        <item>Give way</item>
+        <item>Stop</item>
+        <item>Restriction (all)</item>
+        <item>Restriction (trucks)</item>
+        <item>Restriction (entry)</item>
+        <item>Danger</item>
+        <item>Curve (left)</item>
+        <item>Curve (right)</item>
+        <item>Double curve</item>
+        <item>Uneven road</item>
+        <item>Slippery road</item>
+        <item>Narrow road</item>
+        <item>Construction</item>
+        <item>Traffic light</item>
+        <item>Pedestrian</item>
+        <item>Children</item>
+        <item>Bike</item>
+        <item>Snow / Ice</item>
+        <item>Animals</item>
+        <item>End of restriction</item>
+        <item>Right</item>
+        <item>Left</item>
+        <item>Straight</item>
+        <item>Right or straight</item>
+        <item>Left or straight</item>
+        <item>Pass right</item>
+        <item>Pass left</item>
+        <item>Round about</item>
+        <item>End of no overtaking</item>
+        <item>End of no overtaking (trucks)</item>
     </string-array>
 </resources>
