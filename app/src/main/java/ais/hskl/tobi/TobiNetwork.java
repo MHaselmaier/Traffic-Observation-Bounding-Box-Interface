@@ -76,6 +76,7 @@ public class TobiNetwork implements Serializable
                 float[] box = Arrays.copyOfRange(detection_boxes, i * 4, i * 4 + 4);
                 if (1e-5 > Math.abs(box[0] - box[2]) || 1e-5 > Math.abs(box[1] - box[3]))
                 {
+                    // Ignoring boxes that are too small -> some kind of error
                     continue;
                 }
 
