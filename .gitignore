@@ -2,6 +2,8 @@
 app/.classpath
 app/.project
 app/build/
+app/release/
+app/debug/
 app/app.iml
 .settings/
 local.properties
