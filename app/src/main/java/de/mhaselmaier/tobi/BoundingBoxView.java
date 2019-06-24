@@ -9,8 +9,6 @@ import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.support.constraint.ConstraintLayout;
@@ -45,9 +43,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     private int signSize;
 
     private volatile Constants.SIGNS lastSpeedSign = null;
-    private MediaPlayer dangerSignSound;
-    private MediaPlayer majorRoadSignSound;
-
 
     private static final int BATCH_SIZE = 1;
     private static final int COLOR_CHANNELS = 3;
@@ -68,11 +63,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
     {
         super(context, attrs);
         this.context = context;
-        this.dangerSignSound = MediaPlayer.create(context, R.raw.danger_sound);
-        this.dangerSignSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-        this.majorRoadSignSound = MediaPlayer.create(context, R.raw.major_road_sound);
-        this.majorRoadSignSound.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         loadSigns();
     }
@@ -151,14 +141,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
 
                 updateLastSpeedSign(objects);
 
-                if (((MainActivity)this.context).isDebugModeEnabled())
-                {
-                    if (findDangerSignInPredictionResult(objects))
-                        this.dangerSignSound.start();
-                    else if (findMajorRoadSignInPredictionResult(objects))
-                        this.majorRoadSignSound.start();
-                }
-
                 Canvas canvas = this.boundingBox.lockCanvas();
                 if (null != canvas)
                 {
@@ -229,30 +211,6 @@ public class BoundingBoxView extends ConstraintLayout implements TextureView.Sur
         }
 
         this.lastSpeedSign = sign;
-    }
-
-    private boolean findDangerSignInPredictionResult(TobiNetwork.DetectedObject[] detectedObjects)
-    {
-        for(TobiNetwork.DetectedObject detectedObject: detectedObjects)
-        {
-            Constants.SIGNS objectSign = detectedObject.getDetectedClass();
-            if (objectSign == Constants.SIGNS.DANGER)
-                return true;
-        }
-
-        return false;
-    }
-
-    private boolean findMajorRoadSignInPredictionResult(TobiNetwork.DetectedObject[] detectedObjects)
-    {
-        for(TobiNetwork.DetectedObject detectedObject: detectedObjects)
-        {
-            Constants.SIGNS objectSign = detectedObject.getDetectedClass();
-            if(objectSign == Constants.SIGNS.MAJOR_ROAD || objectSign == Constants.SIGNS.RIGHT_OF_WAY)
-                return true;
-        }
-
-        return false;
     }
 
     public void setupPreview()
