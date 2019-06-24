@@ -6,11 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ais.hskl.tobi.BoundingBoxView
+    <de.mhaselmaier.tobi.BoundingBoxView
         android:id="@+id/boundingBoxView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="ais.hskl.tobi.MainActivity">
+        tools:context="de.mhaselmaier.tobi.MainActivity">
 
         <TextureView
             android:id="@+id/textureBackground"
@@ -30,7 +30,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-    </ais.hskl.tobi.BoundingBoxView>
+    </de.mhaselmaier.tobi.BoundingBoxView>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"
